@@ -41,13 +41,13 @@ Le code suivant utilise cette classe :
 
 ```php
 	<?php
-	include_once('Membre')
+	include_once('Membre');
 	
-	$membre = new Membre('paul');
-	$Nom = $membre.getNom();
-	$Numero = $membre.$numero;
+	$membre = new Membre('paul', 01);
+	$Nom = $membre->getNom();
+	$Numero = $membre->$numero;
 	
-	echo 'Un nouveau membre! Nom: ' $nom ', son âge: ' .$numero. '.';
+	echo 'Un nouveau membre! Nom: ' .$nom. ', son âge: ' .$numero. '.';
 	?>
 ```
 Il y a malheureusement des erreurs dans ces deux extraits de code. Corrigez Ces erreurs (mettez-les en rouge pour vous en souvenir).
