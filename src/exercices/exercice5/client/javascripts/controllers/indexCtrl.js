@@ -32,8 +32,17 @@ function chargerTeamSuccess(data, text, jqXHR) {
 function chargerPlayerSuccess(data, text, jqXHR) {
 	// Appelé lorsque la liste des joueurs est reçue
     var cmbJoueurs = document.getElementById("cmbJoueurs");
-	// A COMPLETER!!! selon la logique suivante:
-	// cmbJoueurs.options[cmbJoueurs.options.length] = new Option(<ce qui sera affiché>, <la valeur de la cellule>));
+    cmbJoueurs.innerHTML = ""
+    let joueurs = Array.from(data.getElementsByTagName("joueur"))
+    for (let i = 0; i < joueurs.length; i++) {
+        let jj = joueurs[i]
+        let j = new Joueur();
+        jName = jj.getElementsByTagName("nom")[0].textContent
+        jPoints = jj.getElementsByTagName("points")[0].textContent
+        j.setNom(jName);
+        j.setPoints(jPoints);
+        cmbJoueurs.options[cmbJoueurs.options.length] = new Option(j.toString(), JSON.stringify(j));
+    }
 }
 
 /**
