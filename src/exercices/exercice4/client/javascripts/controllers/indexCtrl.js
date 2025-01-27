@@ -42,8 +42,15 @@ $(document).ready(function() {
     $.getScript("javascripts/services/servicesHttp.js", function() {
         console.log("servicesHttp.js chargé !");
     });
+
     butLoad.click(function(event) {
-        chargerTeam(chargerTeamSuccess, chargerTeamError);
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/exercices/exercice4/serveur.php",
+            success: function (response) {
+                console.log(response)
+            }
+        });
     });
 });
 
