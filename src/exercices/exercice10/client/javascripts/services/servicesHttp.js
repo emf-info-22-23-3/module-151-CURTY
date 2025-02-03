@@ -15,7 +15,7 @@ function chargerPays(successCallback, errorCallback) {
     type: "GET",
     dataType: "xml",
     url: BASE_URL + "paysManager.php",
-    success: successCallback,
+    success:successCallback,
     error: errorCallback
   });
 }
@@ -30,8 +30,7 @@ function chargerSkieurs(paysId, successCallback, errorCallback) {
   $.ajax({
     type: "GET",
     dataType: "xml",
-    url: BASE_URL + "skieurManager.php",
-    data:'paysId=' + paysId,
+    url: BASE_URL + "skieurManager.php?paysId="+paysId,
     success: successCallback,
     error: errorCallback
   });

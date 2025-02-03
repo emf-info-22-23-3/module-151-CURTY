@@ -1,7 +1,5 @@
 <?php 
-	include_once('Connexion.php');
-	include_once('beans/Pays.php');
-        
+	include_once('Connexion.php');        
 	/**
 	* Classe paysBDManager
 	*

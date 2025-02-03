@@ -10,8 +10,8 @@
  * @param {type} jqXHR
  * @returns {undefined}
  */
-function chargerPaysSuccess(data, text, jqXHR)
-{
+function chargerPaysSuccess(data)
+{ 
 	var cmbPays = document.getElementById("cmbPays");
     $(data).find("pays").each(function() {
       var pays = new Pays();
@@ -34,6 +34,7 @@ function chargerSkieursSuccess(data, text, jqXHR)
     $(data).find("skieur").each(function() {
         var skieur = new Skieur();
         skieur.setNom($(this).find("nom").text());
+        skieur.setPosition($(this).find("position").text());
         txt = txt + "<tr><td>" + skieur.getPosition() + "</td><td>" + skieur.toString() + "</td></tr>";
 
     });  
