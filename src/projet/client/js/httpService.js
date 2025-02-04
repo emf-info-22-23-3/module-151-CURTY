@@ -1,6 +1,6 @@
 class HttpService{
     constructor(){
-        this.newsUrl = "https://finnhub.io/api/v1/news?category=general&token=cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg"
+        this.newsUrl = "https://finnhub.io/api/v1/news?category=general&token=cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg";
     }
 
     getLatestNews(successCallback){
