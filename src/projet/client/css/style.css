@@ -1,0 +1,31 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+
+.marketOption:hover{
+    cursor: pointer;
+    background-color: rgb(230, 230, 230);
+    transition: all 0.3s ease-in-out;
+}
+.marketOptionSelected{
+    font-weight: 600;
+    background-color: rgb(230, 230, 230);
+}
+.tradingViewChart{
+    height: 500px;
+}
+
+#popUp{
+    z-index: 1000;
+    position: absolute;
+    top: calc(100% - 100px);
+    left: 0;
+}
+.news{
+    width: 400px;
+}
+.newsImg{
+    width: 100%;
+    border-radius: 10px;
+}
