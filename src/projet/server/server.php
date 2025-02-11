@@ -23,8 +23,10 @@ if (isset($_SERVER['REQUEST_METHOD']))
                         http_response_code(401);
                         echo json_encode("{error: User not found or password incorrect}");
                     }else{
-                        $user->getUserPortfolio($user->pk_user);
+                        $portfolioId = $connexion->getUserPortfolio($user->getPk());
+                        $user->setFkPortfolio($portfolioId);
                         $_SESSION['user'] = $user;
+                        print_r($_SESSION['user']);
                         http_response_code(200);
                         echo json_encode($user);
                     }

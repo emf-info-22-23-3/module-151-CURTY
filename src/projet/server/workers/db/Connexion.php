@@ -77,19 +77,45 @@ class Connexion {
     }
 
     /**
-     * Méthode permettant de récuperer le portfolio assoscié à un utilisateur et le stocké dans sa variable de session
+     * Méthode permettant de récuperer le portfolio assoscié à un utilisateur et s'il n'en a pas on va le lui créer automatiquement
      * 
      * @param pkUser la pk de l'utilisateur a qui il faut trouver le portfolio
+     * 
+     * @return int la pk du portfolio de l'utilisateur
      * 
      */
     public function getUserPortfolio($pkUser){
         $query = "SELECT pk_portfolio FROM t_portfolio where fk_user = :fkuser";
         $params = array('fkuser' => $pkUser);
-        $user = $_SESSION['user'];
         try {
             $queryPrepared = $this->pdo->prepare($query);
             $queryPrepared->execute($params);
             $fk_portfolio = $queryPrepared->fetch(PDO::FETCH_ASSOC);
+            if($fk_portfolio){
+                $fk_portfolio = $fk_portfolio['pk_portfolio'];
+            }else{
+                $fk_portfolio = $this->createUserPortfolio($pkUser);
+            }
+            return $fk_portfolio;
+        } catch (PDOException $e) {
+            print "Erreur !: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }
+    /**
+     * Méthode permettant de créer un nouveau portfolio a l'utilisateur dans la DB
+     * 
+     * @param pkUser l'utilisateur a qui il faut créer le portfolio
+     * 
+     * @return int la pk du portfolio
+     */
+    public function createUserPortfolio($pkUser){
+        $query = "INSERT INTO t_portfolio (fk_user) VALUES (:fk_user)";
+        $params = array('fk_user' => $pkUser);
+        try {
+            $queryPrepared = $this->pdo->prepare($query);
+            $queryPrepared->execute($params);
+            return $this->pdo->lastInsertId();
         } catch (PDOException $e) {
             print "Erreur !: " . $e->getMessage() . "<br/>";
             die();
