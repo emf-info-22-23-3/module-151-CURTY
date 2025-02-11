@@ -178,7 +178,7 @@ class Connexion {
                 $params = array('avgBuyPrice' => $avgPrice, 'boughtQuantity'=>$totalAmount, 'fkPortfolio'=>$user->getPkPortfolio());
             }else{
                 $insertQuery = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
-                $params = array('fkPortfolio' => $avgPrice, 'fkStock'=>$totalAmount, 'avgPrice'=>$user->getPkPortfolio(), 'boughtQuantity'=>);
+                $params = array('fkPortfolio' => $user->getPkPortfolio(), 'fkStock'=>$totalAmount, 'avgPrice'=>$user->getPkPortfolio(), 'boughtQuantity'=>);
 
             }
         }
