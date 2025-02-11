@@ -75,8 +75,32 @@ class Connexion {
             die();
         }
     }
-    public function createUser(){
 
+    /**
+     * Méthode permettant de récuperer le portfolio assoscié à un utilisateur et le stocké dans sa variable de session
+     * 
+     * @param pkUser la pk de l'utilisateur a qui il faut trouver le portfolio
+     * 
+     */
+    public function getUserPortfolio($pkUser){
+        $query = "SELECT pk_portfolio FROM t_portfolio where fk_user = :fkuser";
+        $params = array('fkuser' => $pkUser);
+        $user = $_SESSION['user'];
+        try {
+            $queryPrepared = $this->pdo->prepare($query);
+            $queryPrepared->execute($params);
+            $fk_portfolio = $queryPrepared->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            print "Erreur !: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }
+    public function addStock(){
+        session_start();
+        $user = $_SESSION['user'];
+        if($user->isauthenticated() == TRUE){
+            $getUserPo = "SELECT  FROM tr_portfolio_stock;";
+        }
     }
 }
 ?>

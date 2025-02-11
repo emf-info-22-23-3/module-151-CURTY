@@ -16,7 +16,7 @@
     height: 500px;
 }
 
-#popUp{
+.popUp{
     z-index: 1000;
     position: absolute;
     top: calc(100% - 100px);
