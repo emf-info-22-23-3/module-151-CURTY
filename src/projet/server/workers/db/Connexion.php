@@ -121,11 +121,66 @@ class Connexion {
             die();
         }
     }
-    public function addStock(){
-        session_start();
+    /**
+     * Méthode permettant de récuperer les positions d'un utilisateur
+     * 
+     * @param pkUser l'utilisateur concerné
+     * 
+     * @return Array Les positions
+     */
+    public function getUserPositions(){
         $user = $_SESSION['user'];
-        if($user->isauthenticated() == TRUE){
-            $getUserPo = "SELECT  FROM tr_portfolio_stock;";
+        if($user->isauthenticated()){
+            $pkPortfolio = $this->getUserPortfolio($user->getPk());
+            $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = pk_stock WHERE fk_portfolio = :fkPortfolio";
+            $params = array('fkPortfolio' => $pkPortfolio);
+            try {
+                $queryPrepared = $this->pdo->prepare($query);
+                $queryPrepared->execute($params);
+                $positions = $queryPrepared->fetchAll(PDO::FETCH_ASSOC);
+                return $positions;
+            } catch (PDOException $e) {
+                print "Erreur !: " . $e->getMessage() . "<br/>";
+                die();
+            }
+        }
+    }
+
+    public function getSpecificUserPosition($stockName){
+        $user = $_SESSION['user'];
+        if($user->isauthenticated()){
+            $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = pk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
+            $params = array('asset' => $stockName, 'fk_portfolio'=>$user->getPkPortfolio());
+            try {
+                $queryPrepared = $this->pdo->prepare($query);
+                $queryPrepared->execute($params);
+                $position = $queryPrepared->fetch(PDO::FETCH_ASSOC);
+                return $position;
+            } catch (PDOException $e) {
+                print "Erreur !: " . $e->getMessage() . "<br/>";
+                die();
+            }
+        }
+    }
+
+    /**
+     * Méthode permettant d'ajouter un stock dans un portfolio. COntinuer a faire cette möthode afin d'ajouter des positions
+     */ 
+    public function addPosition($avgBuyPrice, $boughtQuantity, $stockName){
+        $user = $_SESSION['user'];
+        if($user->isauthenticated()){
+            $existingPosition = $this->getSpecificUserPosition($stockName);
+            //Vérifier si on a déja une position afin de faire qu'une entrée par stock
+            if($existingPosition){
+                $totalAmount = $existingPosition['boughtQuantity'] + $boughtQuantity;
+                $avgPrice = ($boughtQuantity*$avgBuyPrice+$existingPosition['boughtQuantity']*$existingPosition['avgBuyPrice'])/($boughtQuantity+$existingPosition['boughtQuantity']);
+                $updateQuery = "UPDATE tr_portfolio_stock SET avgBuyPrice = :avgBuyPrice, boughtQuantity=:boughtQuantity WHERE fk_portfolio=:fkPortfolio";
+                $params = array('avgBuyPrice' => $avgPrice, 'boughtQuantity'=>$totalAmount, 'fkPortfolio'=>$user->getPkPortfolio());
+            }else{
+                $insertQuery = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
+                $params = array('fkPortfolio' => $avgPrice, 'fkStock'=>$totalAmount, 'avgPrice'=>$user->getPkPortfolio(), 'boughtQuantity'=>);
+
+            }
         }
     }
 }

@@ -11,6 +11,19 @@ if (isset($_SERVER['REQUEST_METHOD']))
     switch ($_SERVER['REQUEST_METHOD'])
     {
         case 'GET':
+            if(isset($_GET['action']) and $_GET['action'] == 'getPositions'){
+                $positions = $connexion->getUserPositions();
+                if($positions){
+                    http_response_code(200);
+                    echo json_encode($positions);
+                }else{
+                    http_response_code(401);
+                    echo json_encode("{error: The user is not authorized to access these positions}");
+                }
+            }else{
+                http_response_code(400);
+                echo 'Error, the request is missing some parameters';
+            }
             break;
         case 'POST':
         $json = file_get_contents('php://input');
