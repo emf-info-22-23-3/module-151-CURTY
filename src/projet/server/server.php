@@ -13,7 +13,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
         case 'GET':
             if(isset($_GET['action']) and $_GET['action'] == 'getPositions'){
                 $positions = $connexion->getUserPositions();
-                if($positions){
+                if(empty($positions) or $positions){
                     http_response_code(200);
                     echo json_encode($positions);
                 }else{
@@ -39,7 +39,6 @@ if (isset($_SERVER['REQUEST_METHOD']))
                         $portfolioId = $connexion->getUserPortfolio($user->getPk());
                         $user->setFkPortfolio($portfolioId);
                         $_SESSION['user'] = $user;
-                        print_r($_SESSION['user']);
                         http_response_code(200);
                         echo json_encode($user);
                     }
@@ -52,7 +51,9 @@ if (isset($_SERVER['REQUEST_METHOD']))
                 unset($_SESSION['user']);
                 session_destroy();
             }else if(isset($data['action']) and $data['action'] == "addStock"){
-
+                if(isset($data['avgBuyPrice']))
+                $connexion->addPosition();
+            addPosition($avgBuyPrice, $boughtQuantity, $stockName)
             }
             else{
                 echo "Action not set";
