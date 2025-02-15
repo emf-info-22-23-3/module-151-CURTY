@@ -217,8 +217,15 @@ class Connexion
             }
         }
     }
+
     /**
      * Méthode permettant d'ajouter un stock dans un portfolio.
+     * 
+     * @param avgBuyPrice le prix d'achat moyen
+     * @param boughtQuantity la quantité de stock
+     * @param stockName le nom du stock acheté
+     * 
+     * @return les positions de l'utilisateur mise à jours ou une erreur
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
