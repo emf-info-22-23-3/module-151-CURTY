@@ -24,10 +24,10 @@ CREATE TABLE t_stock (
 CREATE TABLE tr_portfolio_stock (
     fk_portfolio INT NOT NULL,
     fk_stock INT NOT NULL,
-    avgBuyPrice DECIMAL NOT NULL,
+    avgBuyPrice DECIMAL(10,3) NOT NULL,
     boughtQuantity INT NOT NULL,
     soldQuantity INT DEFAULT 0,
-    avgSoldPrice DECIMAL DEFAULT 0,
+    avgSoldPrice DECIMAL(10,3) DEFAULT 0,
     PRIMARY KEY (fk_portfolio, fk_stock),
     FOREIGN KEY (fk_portfolio) REFERENCES t_portfolio(pk_portfolio) ON DELETE CASCADE,
     FOREIGN KEY (fk_stock) REFERENCES t_stock(pk_stock) ON DELETE CASCADE

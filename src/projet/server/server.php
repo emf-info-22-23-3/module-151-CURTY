@@ -8,31 +8,41 @@ include_once('beans/ErrorAnswer.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
     $connexion = Connexion::getInstance();
     $missingParamError = new ErrorAnswer("Can not perform the requested action due to missing parameters.", 400);
+    $userUnauthorized = new ErrorAnswer("The requested action requires you to be authenticated.", 401);
     session_start();
     switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
-            if (isset($_GET['action'])) {
-                if (isset($_GET['action']) and $_GET['action'] == 'getPositions') {
-                    $positions = $connexion->getUserPositions();
-                    if ($positions == NULL) {
-                        http_response_code(401);
-                        echo json_encode("{error: The user is not authorized to access these positions}");
-                    } else {
+            if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
+                if (isset($_GET['action'])) {
+                    if (isset($_GET['action']) and $_GET['action'] == 'getPositions') {
+                        $positions = $connexion->getUserPositions();
+                        if ($positions == NULL) {
+                            http_response_code(401);
+                            echo json_encode("{error: The user is not authorized to access these positions}");
+                        } else {
+                            http_response_code(200);
+                            echo json_encode($positions);
+                        }
+                    } else if (isset($_GET['action']) and $_GET['action'] == 'test') {
                         http_response_code(200);
-                        echo json_encode($positions);
+                        echo json_encode($connexion->addPosition(150, 1, "SOUN"));
                     }
-                } else if (isset($_GET['action']) and $_GET['action'] == 'test') {
-                    http_response_code(200);
-                    echo json_encode($connexion->addPosition(150, 1, "SOUN"));
+                } else {
+                    http_response_code($missingParamError->getStatus());
+                    echo json_encode($missingParamError);
                 }
             } else {
-                http_response_code($missingParamError->getStatus());
-                echo json_encode($missingParamError);
+                http_response_code($userUnauthorized->getStatus());
+                echo json_encode($userUnauthorized);
             }
             break;
         case 'POST':
             $json = file_get_contents('php://input');
             $data = json_decode($json, TRUE);
+            //Continue to implement the logged in verification here and remove it in the dbWorker
+            if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
+            }
+
             if (isset($data['action'])) {
                 if ($data['action'] == "login") {
                     if (isset($data['email']) and isset($data['password'])) {
