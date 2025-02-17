@@ -222,7 +222,7 @@ class Connexion
      * @param boughtQuantity la quantité de stock
      * @param stockName le nom du stock acheté
      * 
-     * @return les positions de l'utilisateur mise à jours ou une erreur
+     * @return Array les positions de l'utilisateur mise à jours ou une erreur
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
@@ -260,6 +260,12 @@ class Connexion
     }
     /**
      * Méthode permettant de réduire la taille d'une position.
+     * 
+     * @param stockName le nom du stock
+     * @param soldQuantity la quantité vendue
+     * @param avgSellPrice le prix de vente moyen
+     * 
+     * @return Array les positions de l'utilisateur mise à jours ou une erreur
      */
     public function sellStock($avgSellPrice, $soldQuantity, $stockName)
     {
