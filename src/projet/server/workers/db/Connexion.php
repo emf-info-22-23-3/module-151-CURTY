@@ -141,19 +141,17 @@ class Connexion
     public function getUserPositions()
     {
         $positions = NULL;
-        if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
-            $user = $_SESSION['user'];
-            $pkPortfolio = $this->getUserPkPortfolio($user->getPk());
-            $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = pk_stock WHERE fk_portfolio = :fkPortfolio";
-            $params = array('fkPortfolio' => $pkPortfolio);
-            try {
-                $queryPrepared = $this->pdo->prepare($query);
-                $queryPrepared->execute($params);
-                $positions = $queryPrepared->fetchAll(PDO::FETCH_ASSOC);
-                return $positions;
-            } catch (PDOException $e) {
-                return new ErrorAnswer("An error occurred while trying to fetch the user's positions.", 500);
-            }
+        $user = $_SESSION['user'];
+        $pkPortfolio = $this->getUserPkPortfolio($user->getPk());
+        $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = pk_stock WHERE fk_portfolio = :fkPortfolio";
+        $params = array('fkPortfolio' => $pkPortfolio);
+        try {
+            $queryPrepared = $this->pdo->prepare($query);
+            $queryPrepared->execute($params);
+            $positions = $queryPrepared->fetchAll(PDO::FETCH_ASSOC);
+            return $positions;
+        } catch (PDOException $e) {
+            return new ErrorAnswer("An error occurred while trying to fetch the user's positions.", 500);
         }
     }
     /**
@@ -165,7 +163,6 @@ class Connexion
      */
     public function getSpecificUserPosition($stockName)
     {
-        if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
             $user = $_SESSION['user'];
             $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = :pk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
             $params = array('pk_stock' => $this->verifyAsset($stockName), 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
@@ -177,7 +174,6 @@ class Connexion
             } catch (PDOException $e) {
                 return new ErrorAnswer("An error occurred while trying to fetch the user's " . $stockName . " position.", 500);
             }
-        }
     }
     /**
      * Méthode permettant de vérifier si l'action est déja enregistrée dans la DB et si ce n'est pas le cas, on va la créer
@@ -229,7 +225,6 @@ class Connexion
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
-        if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
             $user = $_SESSION['user'];
             $existingPosition = $this->getSpecificUserPosition($stockName);
             //S'il y a eu une erreur lors du fetching des positions
@@ -261,8 +256,5 @@ class Connexion
             } catch (PDOException $e) {
                 return new ErrorAnswer("Error while trying to create a position for the stock '" . $stockName . "'.", 500);
             }
-        } else {
-            return new ErrorAnswer("The requested action requires you to be logged in.", 401);
-        }
     }
 }

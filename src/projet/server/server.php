@@ -6,93 +6,92 @@ header("Access-Control-Allow-Credentials: true");
 include_once('workers/db/connexion.php');
 include_once('beans/ErrorAnswer.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
+    //Déclaration des variables de base
     $connexion = Connexion::getInstance();
     $missingParamError = new ErrorAnswer("Can not perform the requested action due to missing parameters.", 400);
     $userUnauthorized = new ErrorAnswer("The requested action requires you to be authenticated.", 401);
+    $httpSuccessCode = 200;
     session_start();
-    switch ($_SERVER['REQUEST_METHOD']) {
-        case 'GET':
-            if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
+
+    $json = file_get_contents('php://input');
+    $receivedParams = json_decode($json, TRUE);
+    //Vérifier que l'utilisateur soit authitifiée avant de le laisser faire quelque chose d'autre que se logguer
+    if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'GET':
                 if (isset($_GET['action'])) {
-                    if (isset($_GET['action']) and $_GET['action'] == 'getPositions') {
+                    if ($_GET['action'] == 'getPositions') {
                         $positions = $connexion->getUserPositions();
-                        if ($positions == NULL) {
-                            http_response_code(401);
-                            echo json_encode("{error: The user is not authorized to access these positions}");
+                        if ($positions instanceof ErrorAnswer) {
+                            http_response_code($positions->getStatus());
+                            echo json_encode($positions);
                         } else {
-                            http_response_code(200);
+                            http_response_code($httpSuccessCode);
                             echo json_encode($positions);
                         }
-                    } else if (isset($_GET['action']) and $_GET['action'] == 'test') {
-                        http_response_code(200);
-                        echo json_encode($connexion->addPosition(150, 1, "SOUN"));
                     }
                 } else {
                     http_response_code($missingParamError->getStatus());
                     echo json_encode($missingParamError);
                 }
-            } else {
-                http_response_code($userUnauthorized->getStatus());
-                echo json_encode($userUnauthorized);
-            }
-            break;
-        case 'POST':
-            $json = file_get_contents('php://input');
-            $data = json_decode($json, TRUE);
-            //Continue to implement the logged in verification here and remove it in the dbWorker
-            if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
-            }
-
-            if (isset($data['action'])) {
-                if ($data['action'] == "login") {
-                    if (isset($data['email']) and isset($data['password'])) {
-                        $user = $connexion->authenticateUser($data['email'], $data['password']);
-                        if ($user instanceof ErrorAnswer) {
-                            http_response_code($user->getStatus());
-                            echo json_encode($user);
-                        } else {
-                            $portfolioId = $connexion->getUserPkPortfolio($user->getPk());
-                            $user->setFkPortfolio($portfolioId);
-                            $_SESSION['user'] = $user;
-                            http_response_code(200);
-                            echo json_encode($user);
-                        }
-                    } else {
-                        http_response_code($missingParamError->getStatus());
-                        echo json_encode($missingParamError);
-                    }
-                } else if ($data['action'] == "disconnect") {
-                    unset($_SESSION['user']);
-                    session_destroy();
-                } else if ($data['action'] == "addStock") {
-                    if (isset($data['avgBuyPrice']) and isset($data['boughtQuantity']) and isset($data['asset'])) {
-                        if (is_numeric($data['avgBuyPrice']) and $data['avgBuyPrice'] > 0 and is_numeric($data['boughtQuantity']) and $data['boughtQuantity'] > 0) {
-                            $return = $connexion->addPosition($data['avgBuyPrice'], $data['boughtQuantity'], $data['asset']);
-                            if ($return instanceof ErrorAnswer) {
-                                http_response_code($return->getStatus());
-                                echo json_encode($return);
+                break;
+            case 'POST':
+                $json = file_get_contents('php://input');
+                $receivedParams = json_decode($json, TRUE);
+                if (isset($receivedParams['action'])) {
+                    if ($receivedParams['action'] == "disconnect") {
+                        unset($_SESSION['user']);
+                        session_destroy();
+                    } else if ($receivedParams['action'] == "addStock") {
+                        if (isset($receivedParams['avgBuyPrice']) and isset($receivedParams['boughtQuantity']) and isset($receivedParams['asset'])) {
+                            if (is_numeric($receivedParams['avgBuyPrice']) and $receivedParams['avgBuyPrice'] > 0 and is_numeric($receivedParams['boughtQuantity']) and $receivedParams['boughtQuantity'] > 0) {
+                                $newPositions = $connexion->addPosition($receivedParams['avgBuyPrice'], $receivedParams['boughtQuantity'], $receivedParams['asset']);
+                                if ($newPositions instanceof ErrorAnswer) {
+                                    http_response_code($newPositions->getStatus());
+                                    echo json_encode($newPositions);
+                                } else {
+                                    http_response_code($httpSuccessCode);
+                                    echo json_encode($newPositions);
+                                }
                             } else {
-                                http_response_code(200);
-                                echo json_encode($return);
+                                $error = new ErrorAnswer("The buy price or quantity is not a valid number.", 400);
+                                http_response_code($error->getStatus());
+                                echo json_encode($error);
                             }
                         } else {
-                            $error = new ErrorAnswer("The buy price or quantity is not a valid number.", 400);
-                            http_response_code($error->getStatus());
-                            echo json_encode($error);
+                            http_response_code($missingParamError->getStatus());
+                            echo json_encode($missingParamError);
                         }
-                    } else {
-                        http_response_code($missingParamError->getStatus());
-                        echo json_encode($missingParamError);
                     }
+                } else {
+                    http_response_code($missingParamError->getStatus());
+                    echo json_encode($missingParamError);
                 }
+                break;
+            case 'PUT':
+                break;
+            case 'DELETE':
+                break;
+        }
+    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($receivedParams['action']) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
+        if (isset($receivedParams['email']) and isset($receivedParams['password'])) {
+            $user = $connexion->authenticateUser($receivedParams['email'], $receivedParams['password']);
+            if ($user instanceof ErrorAnswer) {
+                http_response_code($user->getStatus());
+                echo json_encode($user);
             } else {
-                http_response_code($missingParamError->getStatus());
-                echo json_encode($missingParamError);
+                $portfolioId = $connexion->getUserPkPortfolio($user->getPk());
+                $user->setFkPortfolio($portfolioId);
+                $_SESSION['user'] = $user;
+                http_response_code($httpSuccessCode);
+                echo json_encode($user);
             }
-            break;
-        case 'PUT':
-            break;
-        case 'DELETE':
-            break;
+        } else {
+            http_response_code($missingParamError->getStatus());
+            echo json_encode($missingParamError);
+        }
+    } else { //Utilisateur non autorisé
+        http_response_code($userUnauthorized->getStatus());
+        echo json_encode($userUnauthorized);
     }
 }
