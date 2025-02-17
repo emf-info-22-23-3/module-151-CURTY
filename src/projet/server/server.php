@@ -3,16 +3,15 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, PUT");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
-include_once('workers/db/connexion.php');
+include_once('workers/db/Worker.php');
 include_once('beans/ErrorAnswer.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
     //Déclaration des variables de base
     $connexion = Connexion::getInstance();
-    $missingParamError = new ErrorAnswer("Can not perform the requested action due to missing parameters.", 400);
+    $badRequest = new ErrorAnswer("Can not perform the requested action due to missing parameters.", 400);
     $userUnauthorized = new ErrorAnswer("The requested action requires you to be authenticated.", 401);
     $httpSuccessCode = 200;
     session_start();
-
     $json = file_get_contents('php://input');
     $receivedParams = json_decode($json, TRUE);
     //Vérifier que l'utilisateur soit authitifiée avant de le laisser faire quelque chose d'autre que se logguer
@@ -29,10 +28,12 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             http_response_code($httpSuccessCode);
                             echo json_encode($positions);
                         }
+                    }else if($_GET['action'] == "test"){
+                        print_r($connexion->sellStock(159.87,19,'PLTR'));
                     }
                 } else {
-                    http_response_code($missingParamError->getStatus());
-                    echo json_encode($missingParamError);
+                    http_response_code($badRequest->getStatus());
+                    echo json_encode($badRequest);
                 }
                 break;
             case 'POST':
@@ -59,13 +60,33 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                                 echo json_encode($error);
                             }
                         } else {
-                            http_response_code($missingParamError->getStatus());
-                            echo json_encode($missingParamError);
+                            http_response_code($badRequest->getStatus());
+                            echo json_encode($badRequest);
                         }
+                    }else if ($receivedParams['action'] == "sellStock") {
+                        if(isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])){
+                            if(is_numeric($receivedParams["avgSellPrice"]) and is_numeric($receivedParams["soldQuantity"])){
+                                $result = $connexion->sellStock($receivedParams["avgSellPrice"],$receivedParams["soldQuantity"],$receivedParams['asset']);
+                                if($result instanceof ErrorAnswer){
+                                    http_response_code($result->getStatus());
+                                    echo json_encode($result);
+                                }else{
+                                    http_response_code($httpSuccessCode);
+                                    echo json_encode($result);
+                                }
+                            }else{
+                                http_response_code($badRequest->getStatus());
+                                echo json_encode($badRequest);
+                            }
+                        }else{
+                            http_response_code($badRequest->getStatus());
+                            echo json_encode($badRequest);
+                        }
+
                     }
                 } else {
-                    http_response_code($missingParamError->getStatus());
-                    echo json_encode($missingParamError);
+                    http_response_code($badRequest->getStatus());
+                    echo json_encode($badRequest);
                 }
                 break;
             case 'PUT':
@@ -81,14 +102,19 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 echo json_encode($user);
             } else {
                 $portfolioId = $connexion->getUserPkPortfolio($user->getPk());
-                $user->setFkPortfolio($portfolioId);
-                $_SESSION['user'] = $user;
-                http_response_code($httpSuccessCode);
-                echo json_encode($user);
+                if ($portfolioId instanceof ErrorAnswer) {
+                    http_response_code($portfolioId->getStatus());
+                    echo json_encode($portfolioId);
+                } else {
+                    $user->setFkPortfolio($portfolioId);
+                    $_SESSION['user'] = $user;
+                    http_response_code($httpSuccessCode);
+                    echo json_encode($user);
+                }
             }
         } else {
-            http_response_code($missingParamError->getStatus());
-            echo json_encode($missingParamError);
+            http_response_code($badRequest->getStatus());
+            echo json_encode($badRequest);
         }
     } else { //Utilisateur non autorisé
         http_response_code($userUnauthorized->getStatus());

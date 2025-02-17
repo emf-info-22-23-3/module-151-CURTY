@@ -5,7 +5,7 @@ include_once('beans/User.php');
 /**
  * Classe connexion
  *
- * Cette classe de gérer l'accès à la base de données.
+ * Cette classes est le worker principale qui va gérer toutes les interactions entre le client et la DB
  *
  * @version 1.0
  * @author Curty Esteban
@@ -103,13 +103,10 @@ class Connexion
                 $pk_portfolio = $pk_portfolio['pk_portfolio'];
             } else {
                 $pk_portfolio = $this->createUserPortfolio($pkUser);
-                if (!$pk_portfolio) {
-                    $pk_portfolio = new ErrorAnswer("An error occurred while trying to create the portfolio.", 500);
-                }
             }
             return $pk_portfolio;
         } catch (PDOException $e) {
-            return new ErrorAnswer("An error occurred while trying to fetch the user's portfolio.", 500);
+            return new ErrorAnswer("An error occurred while trying to fetch the user's portfolio. Please, try again in a moment.", 500);
         }
     }
     /**
@@ -128,7 +125,7 @@ class Connexion
             $queryPrepared->execute($params);
             return $this->pdo->lastInsertId();
         } catch (PDOException $e) {
-            return new ErrorAnswer("An error occurred while trying to fetch the user's portfolio.", 500);
+            return new ErrorAnswer("An error occurred while trying to create the user's portfolio. Please, try again in a moment.", 500);
         }
     }
     /**
@@ -163,24 +160,24 @@ class Connexion
      */
     public function getSpecificUserPosition($stockName)
     {
-            $user = $_SESSION['user'];
-            $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = :pk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
-            $params = array('pk_stock' => $this->verifyAsset($stockName), 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
-            try {
-                $queryPrepared = $this->pdo->prepare($query);
-                $queryPrepared->execute($params);
-                $position = $queryPrepared->fetch(PDO::FETCH_ASSOC);
-                return $position;
-            } catch (PDOException $e) {
-                return new ErrorAnswer("An error occurred while trying to fetch the user's " . $stockName . " position.", 500);
-            }
+        $user = $_SESSION['user'];
+        $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = :pk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
+        $params = array('pk_stock' => $this->verifyAsset($stockName), 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
+        try {
+            $queryPrepared = $this->pdo->prepare($query);
+            $queryPrepared->execute($params);
+            $position = $queryPrepared->fetch(PDO::FETCH_ASSOC);
+            return $position;
+        } catch (PDOException $e) {
+            return new ErrorAnswer("An error occurred while trying to fetch the user's " . $stockName . " position.", 500);
+        }
     }
     /**
-     * Méthode permettant de vérifier si l'action est déja enregistrée dans la DB et si ce n'est pas le cas, on va la créer
+     * Méthode permettant de vérifier si l'action est déja enregistrée dans la DB et si ce n'est pas le cas, on va la créer à condition que le ticker existe
      * 
-     * @param ticker le symbol représentant l'entreprise
+     * @param ticker le symbol représentant l'action
      * 
-     * @return int la pk du stock ou -1 si celui-ci est invalide
+     * @return int la pk du stock ou une ErrorAnswer en cas de ticker invalide ou d'erreur avev la DB
      */
     public function verifyAsset($ticker)
     {
@@ -189,6 +186,7 @@ class Connexion
         $url = "https://finnhub.io/api/v1/stock/profile2?symbol=" . urlencode($ticker) . "&token=" . $apiKey;
         $response = file_get_contents($url);
         $data = json_decode($response, true);
+        //Vérifier que le stock existe bel et bien
         if (isset($data["ticker"])) {
             //Vérifier si le stock est déja dans la DB
             $query = "select pk_stock from BaoBull.t_stock where name = :ticker";
@@ -198,6 +196,7 @@ class Connexion
                 $queryPrepared->execute($params);
                 $stock = $queryPrepared->fetch(PDO::FETCH_ASSOC);
                 $pkStock = -1;
+                //Vérifier que le stock existe sinon, on l'ajoute dans la DB
                 if ($stock) {
                     $pkStock = $stock['pk_stock'];
                 } else {
@@ -209,8 +208,10 @@ class Connexion
                 }
                 return $pkStock;
             } catch (PDOException $e) {
-                return new ErrorAnswer("Error while trying to verify the ticker '" . $ticker . "'.", 500);
+                return new ErrorAnswer("Error while trying to create the ticker '" . $ticker . "' in the database. Please try again in a moment.", 500);
             }
+        } else {
+            return new ErrorAnswer("Error, the symbol '" . $ticker . "' does not exist.", 500);
         }
     }
 
@@ -225,36 +226,83 @@ class Connexion
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
-            $user = $_SESSION['user'];
-            $existingPosition = $this->getSpecificUserPosition($stockName);
-            //S'il y a eu une erreur lors du fetching des positions
-            if ($existingPosition instanceof ErrorAnswer) {
-                return $existingPosition;
-            }
-            $fkStock = $this->verifyAsset($stockName);
-            $query = "";
-            $params = "";
-            //Vérifier si on a déja une position afin de faire qu'une entrée par stock
-            if ($existingPosition) {
-                $totalAmount = $existingPosition['boughtQuantity'] + $boughtQuantity;
-                $avgPrice = ($boughtQuantity * $avgBuyPrice + $existingPosition['boughtQuantity'] * $existingPosition['avgBuyPrice']) / ($boughtQuantity + $existingPosition['boughtQuantity']);
-                $query = "UPDATE tr_portfolio_stock SET avgBuyPrice = :avgBuyPrice, boughtQuantity=:boughtQuantity WHERE fk_portfolio=:fkPortfolio and fk_stock=:fk_stock";
-                $params = array('avgBuyPrice' => $avgPrice, 'boughtQuantity' => $totalAmount, 'fkPortfolio' => $user->getPkPortfolio(), 'fk_stock' => $fkStock);
+        $user = $_SESSION['user'];
+        $existingPosition = $this->getSpecificUserPosition($stockName);
+        //S'il y a eu une erreur lors du fetching des positions
+        if ($existingPosition instanceof ErrorAnswer) {
+            return $existingPosition;
+        }
+        $fkStock = $this->verifyAsset($stockName);
+        $query = "";
+        $params = "";
+        //Vérifier si on a déja une position afin de faire qu'une entrée par stock
+        if ($existingPosition) {
+            $totalAmount = $existingPosition['boughtQuantity'] + $boughtQuantity;
+            $avgPrice = ($boughtQuantity * $avgBuyPrice + $existingPosition['boughtQuantity'] * $existingPosition['avgBuyPrice']) / ($boughtQuantity + $existingPosition['boughtQuantity']);
+            $query = "UPDATE tr_portfolio_stock SET avgBuyPrice = :avgBuyPrice, boughtQuantity=:boughtQuantity WHERE fk_portfolio=:fkPortfolio and fk_stock=:fk_stock";
+            $params = array('avgBuyPrice' => $avgPrice, 'boughtQuantity' => $totalAmount, 'fkPortfolio' => $user->getPkPortfolio(), 'fk_stock' => $fkStock);
+        } else {
+            //Si on à pas encore de position, on va premièrement checker si le ticker est déja présent ou non pour après créer la position
+            if ($fkStock) {
+                $query = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
+                $params = array('fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock, 'avgPrice' => $avgBuyPrice, 'boughtQuantity' => $boughtQuantity);
             } else {
-                //Si on à pas encore de position, on va premièrement checker si le ticker est déja présent ou non pour après créer la position
-                if ($fkStock) {
-                    $query = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
-                    $params = array('fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock, 'avgPrice' => $avgBuyPrice, 'boughtQuantity' => $boughtQuantity);
-                } else {
-                    return new ErrorAnswer("The provided ticker does not exist.", 404);
+                return new ErrorAnswer("The provided ticker does not exist.", 404);
+            }
+        }
+        try {
+            $queryPrepared = $this->pdo->prepare($query);
+            $queryPrepared->execute($params);
+            return ($this->getUserPositions());
+        } catch (PDOException $e) {
+            return new ErrorAnswer("Error while trying to create a position for the stock '" . $stockName . "'.", 500);
+        }
+    }
+    /**
+     * Méthode permettant de réduire la taille d'une position.
+     */
+    public function sellStock($avgSellPrice, $soldQuantity, $stockName)
+    {
+        $user = $_SESSION['user'];
+        $existingPosition = $existingPosition = $this->getSpecificUserPosition($stockName);
+        $toReturn = NULL;
+        //Si on a bien récuperer une position
+        if (!($existingPosition instanceof ErrorAnswer) and $existingPosition) {
+            $boughtQuantity = $existingPosition['boughtQuantity'];
+            $alreadySoldQuantity = $existingPosition['soldQuantity'];
+            $currentHoldingAmount = $boughtQuantity - $alreadySoldQuantity;
+            $avgSoldPrice = $existingPosition['avgSoldPrice'];
+            $fkStock = $this->verifyAsset($stockName);
+            //Vérifier qu'on ait bien la PK du stock
+            if (!($fkStock instanceof ErrorAnswer)) {
+                //Vérifier qu'on ait pas déjà tous vendu et que la quantité qu'on veut vendre soit pas trop grande
+                if ($currentHoldingAmount > 0 and $soldQuantity <= $currentHoldingAmount) {
+                    $query = "update tr_portfolio_stock set soldQuantity=:soldQuantity, avgSoldPrice=:avgSoldPrice where fk_portfolio=:fkPortfolio and fk_stock = :fkStock";
+                    $params = "";
+                    //Vérifier si on à déjà vendu une fois ou pas
+                    if ($alreadySoldQuantity == 0) {
+                        $params = array('soldQuantity' => $soldQuantity, 'avgSoldPrice' => $avgSellPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
+                    } else {
+                        $totalSoldQuantity = $soldQuantity+$alreadySoldQuantity;
+                        $newAvgSoldPrice = ($alreadySoldQuantity * $avgSoldPrice+$soldQuantity*$avgSellPrice)/($alreadySoldQuantity+$soldQuantity);
+                        $params = array('soldQuantity' => $totalSoldQuantity, 'avgSoldPrice' => $newAvgSoldPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
+                    }
+                    try {
+                        $queryPrepared = $this->pdo->prepare($query);
+                        $queryPrepared->execute($params);
+                        return ($this->getUserPositions());
+                    } catch (PDOException $e) {
+                        $toReturn = new ErrorAnswer("Error while trying to sell ".$soldQuantity." of '" . $stockName . "'.", 500);
+                    }
+                }else{
+                    $toReturn = new ErrorAnswer("Can not sell ".$soldQuantity." shares of ".$stockName." because you current holdings are too small.",422);
                 }
+            }else{
+                $toReturn = $fkStock;
             }
-            try {
-                $queryPrepared = $this->pdo->prepare($query);
-                $queryPrepared->execute($params);
-                return ($this->getUserPositions());
-            } catch (PDOException $e) {
-                return new ErrorAnswer("Error while trying to create a position for the stock '" . $stockName . "'.", 500);
-            }
+        }else{
+            $toReturn = new ErrorAnswer("Can not sell '".$stockName."'  because no existing position has been found.", 404);
+        }
+        return $toReturn;
     }
 }
