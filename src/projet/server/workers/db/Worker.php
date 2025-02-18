@@ -162,14 +162,19 @@ class Connexion
     {
         $user = $_SESSION['user'];
         $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = :pk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
-        $params = array('pk_stock' => $this->verifyAsset($stockName), 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
-        try {
-            $queryPrepared = $this->pdo->prepare($query);
-            $queryPrepared->execute($params);
-            $position = $queryPrepared->fetch(PDO::FETCH_ASSOC);
-            return $position;
-        } catch (PDOException $e) {
-            return new ErrorAnswer("An error occurred while trying to fetch the user's " . $stockName . " position.", 500);
+        $fkStock = $this->verifyAsset($stockName);
+        if ($fkStock instanceof ErrorAnswer) {
+            return $fkStock;
+        } else {
+            $params = array('pk_stock' => $fkStock, 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
+            try {
+                $queryPrepared = $this->pdo->prepare($query);
+                $queryPrepared->execute($params);
+                $position = $queryPrepared->fetch(PDO::FETCH_ASSOC);
+                return $position;
+            } catch (PDOException $e) {
+                return new ErrorAnswer("An error occurred while trying to fetch the user's " . $stockName . " position.", 500);
+            }
         }
     }
     /**
@@ -211,6 +216,7 @@ class Connexion
                 return new ErrorAnswer("Error while trying to create the ticker '" . $ticker . "' in the database. Please try again in a moment.", 500);
             }
         } else {
+            //Changer le code de l'erreur
             return new ErrorAnswer("Error, the symbol '" . $ticker . "' does not exist.", 500);
         }
     }
@@ -289,8 +295,8 @@ class Connexion
                     if ($alreadySoldQuantity == 0) {
                         $params = array('soldQuantity' => $soldQuantity, 'avgSoldPrice' => $avgSellPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
                     } else {
-                        $totalSoldQuantity = $soldQuantity+$alreadySoldQuantity;
-                        $newAvgSoldPrice = ($alreadySoldQuantity * $avgSoldPrice+$soldQuantity*$avgSellPrice)/($alreadySoldQuantity+$soldQuantity);
+                        $totalSoldQuantity = $soldQuantity + $alreadySoldQuantity;
+                        $newAvgSoldPrice = ($alreadySoldQuantity * $avgSoldPrice + $soldQuantity * $avgSellPrice) / ($alreadySoldQuantity + $soldQuantity);
                         $params = array('soldQuantity' => $totalSoldQuantity, 'avgSoldPrice' => $newAvgSoldPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
                     }
                     try {
@@ -298,16 +304,16 @@ class Connexion
                         $queryPrepared->execute($params);
                         return ($this->getUserPositions());
                     } catch (PDOException $e) {
-                        $toReturn = new ErrorAnswer("Error while trying to sell ".$soldQuantity." of '" . $stockName . "'.", 500);
+                        $toReturn = new ErrorAnswer("Error while trying to sell " . $soldQuantity . " of '" . $stockName . "'.", 500);
                     }
-                }else{
-                    $toReturn = new ErrorAnswer("Can not sell ".$soldQuantity." shares of ".$stockName." because you current holdings are too small.",422);
+                } else {
+                    $toReturn = new ErrorAnswer("Can not sell " . $soldQuantity . " shares of " . $stockName . " because you current holdings are too small.", 422);
                 }
-            }else{
+            } else {
                 $toReturn = $fkStock;
             }
-        }else{
-            $toReturn = new ErrorAnswer("Can not sell '".$stockName."'  because no existing position has been found.", 404);
+        } else {
+            $toReturn = new ErrorAnswer("Can not sell '" . $stockName . "'  because no existing position has been found.", 404);
         }
         return $toReturn;
     }

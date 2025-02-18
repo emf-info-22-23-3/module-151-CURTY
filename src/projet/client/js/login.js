@@ -1,7 +1,6 @@
 $(document).ready(function () {
     window.loginCtrl = new Login();
   });
-
 class Login{
     constructor(){
         this.httpServ = new HttpService();
@@ -10,9 +9,9 @@ class Login{
     }
     setListeners(){
         $("#btnSubmit").click((e) =>{
-            let email = $("#emailInput").val();
-            let password = $("#passwordInput").val();
-            this.httpServ.authenticateUser(()=>{window.location.replace("/projet/client/myPortfolio.html");;
+            let email = $("#email").val();
+            let password = $("#password").val();
+            this.httpServ.authenticateUser(()=>{window.location.replace("/projet/client/portfolio.html");
           },email,password);
         });
     }

@@ -28,8 +28,8 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             http_response_code($httpSuccessCode);
                             echo json_encode($positions);
                         }
-                    }else if($_GET['action'] == "test"){
-                        print_r($connexion->sellStock(159.87,19,'PLTR'));
+                    } else if ($_GET['action'] == "test") {
+                        print_r($connexion->sellStock(159.87, 19, 'PLTR'));
                     }
                 } else {
                     http_response_code($badRequest->getStatus());
@@ -40,7 +40,10 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 $json = file_get_contents('php://input');
                 $receivedParams = json_decode($json, TRUE);
                 if (isset($receivedParams['action'])) {
-                    if ($receivedParams['action'] == "disconnect") {
+                    if ($receivedParams['action'] == "login") {
+                        http_response_code($httpSuccessCode);
+                        echo json_encode($_SESSION['user']);
+                    } else if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);
                         session_destroy();
                     } else if ($receivedParams['action'] == "addStock") {
@@ -63,26 +66,25 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             http_response_code($badRequest->getStatus());
                             echo json_encode($badRequest);
                         }
-                    }else if ($receivedParams['action'] == "sellStock") {
-                        if(isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])){
-                            if(is_numeric($receivedParams["avgSellPrice"]) and is_numeric($receivedParams["soldQuantity"])){
-                                $result = $connexion->sellStock($receivedParams["avgSellPrice"],$receivedParams["soldQuantity"],$receivedParams['asset']);
-                                if($result instanceof ErrorAnswer){
+                    } else if ($receivedParams['action'] == "sellStock") {
+                        if (isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])) {
+                            if (is_numeric($receivedParams["avgSellPrice"]) and is_numeric($receivedParams["soldQuantity"])) {
+                                $result = $connexion->sellStock($receivedParams["avgSellPrice"], $receivedParams["soldQuantity"], $receivedParams['asset']);
+                                if ($result instanceof ErrorAnswer) {
                                     http_response_code($result->getStatus());
                                     echo json_encode($result);
-                                }else{
+                                } else {
                                     http_response_code($httpSuccessCode);
                                     echo json_encode($result);
                                 }
-                            }else{
+                            } else {
                                 http_response_code($badRequest->getStatus());
                                 echo json_encode($badRequest);
                             }
-                        }else{
+                        } else {
                             http_response_code($badRequest->getStatus());
                             echo json_encode($badRequest);
                         }
-
                     }
                 } else {
                     http_response_code($badRequest->getStatus());
