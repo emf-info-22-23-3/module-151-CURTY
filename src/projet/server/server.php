@@ -5,6 +5,9 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
 include_once('workers/db/Worker.php');
 include_once('beans/ErrorAnswer.php');
+include_once('beans/User.php');
+include_once('workers/WorkerAuthentication.php');
+include_once('workers/WorkerPortfolio.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
     //Déclaration des variables de base
     $connexion = Connexion::getInstance();
@@ -29,7 +32,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             echo json_encode($positions);
                         }
                     } else if ($_GET['action'] == "test") {
-                        print_r($connexion->sellStock(159.87, 19, 'PLTR'));
+                        echo json_encode(WorkerPortfolio::getInstance()->verifyAsset('SOUN'));
                     }
                 } else {
                     http_response_code($badRequest->getStatus());
@@ -98,17 +101,17 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
         }
     } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($receivedParams['action']) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
         if (isset($receivedParams['email']) and isset($receivedParams['password'])) {
-            $user = $connexion->authenticateUser($receivedParams['email'], $receivedParams['password']);
+            $user = WorkerAuthentication::getInstance()->authenticateUser($receivedParams['email'], $receivedParams['password']);
             if ($user instanceof ErrorAnswer) {
                 http_response_code($user->getStatus());
                 echo json_encode($user);
             } else {
-                $portfolioId = $connexion->getUserPkPortfolio($user->getPk());
-                if ($portfolioId instanceof ErrorAnswer) {
-                    http_response_code($portfolioId->getStatus());
-                    echo json_encode($portfolioId);
+                $portfolioPk = WorkerPortfolio::getInstance()->getUserPkPortfolio($user->getPk());
+                if ($portfolioPk instanceof ErrorAnswer) {
+                    http_response_code($portfolioPk->getStatus());
+                    echo json_encode($portfolioPk);
                 } else {
-                    $user->setFkPortfolio($portfolioId);
+                    $user->setFkPortfolio($portfolioPk);
                     $_SESSION['user'] = $user;
                     http_response_code($httpSuccessCode);
                     echo json_encode($user);
