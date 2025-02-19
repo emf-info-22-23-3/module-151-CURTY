@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Script server.php
  * 
@@ -12,15 +13,13 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, PUT");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
-include_once('workers/db/Worker.php');
 include_once('beans/ErrorAnswer.php');
+include_once('beans/httpReturns.php');
+include_once('workers/db/Worker.php');
 include_once('beans/User.php');
 include_once('workers/WorkerAuthentication.php');
 include_once('workers/WorkerPortfolio.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
-    $badRequest = new ErrorAnswer("Can not perform the requested action due to missing or invalid parameters.", 400);
-    $userUnauthorized = new ErrorAnswer("The requested action requires you to be authenticated.", 401);
-    $httpSuccessCode = 200;
     session_start();
     $json = file_get_contents('php://input');
     $receivedParams = json_decode($json, TRUE);
@@ -35,15 +34,14 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             http_response_code($positions->getStatus());
                             echo json_encode($positions);
                         } else {
-                            http_response_code($httpSuccessCode);
+                            http_response_code(HTTP_SUCCESS);
                             echo json_encode($positions);
                         }
-                    } else if ($_GET['action'] == "test") {
-                        echo json_encode(WorkerPortfolio::getInstance()->verifyAsset('SOUN'));
+                    } else {
                     }
                 } else {
-                    http_response_code($badRequest->getStatus());
-                    echo json_encode($badRequest);
+                    http_response_code(BAD_REQUEST->getStatus());
+                    echo json_encode(BAD_REQUEST);
                 }
                 break;
             case 'POST':
@@ -51,7 +49,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 $receivedParams = json_decode($json, TRUE);
                 if (isset($receivedParams['action'])) {
                     if ($receivedParams['action'] == "login") {
-                        http_response_code($httpSuccessCode);
+                        http_response_code(HTTP_SUCCESS);
                         echo json_encode($_SESSION['user']);
                     } else if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);
@@ -64,17 +62,16 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                                     http_response_code($newPositions->getStatus());
                                     echo json_encode($newPositions);
                                 } else {
-                                    http_response_code($httpSuccessCode);
+                                    http_response_code(HTTP_SUCCESS);
                                     echo json_encode($newPositions);
                                 }
                             } else {
-                                $error = new ErrorAnswer("The buy price or quantity is not a valid number.", 400);
-                                http_response_code($error->getStatus());
-                                echo json_encode($error);
+                                http_response_code(BAD_REQUEST->getStatus());
+                                echo json_encode(BAD_REQUEST);
                             }
                         } else {
-                            http_response_code($badRequest->getStatus());
-                            echo json_encode($badRequest);
+                            http_response_code(BAD_REQUEST->getStatus());
+                            echo json_encode(BAD_REQUEST);
                         }
                     } else if ($receivedParams['action'] == "sellStock") {
                         if (isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])) {
@@ -84,21 +81,21 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                                     http_response_code($result->getStatus());
                                     echo json_encode($result);
                                 } else {
-                                    http_response_code($httpSuccessCode);
+                                    http_response_code(HTTP_SUCCESS);
                                     echo json_encode($result);
                                 }
                             } else {
-                                http_response_code($badRequest->getStatus());
-                                echo json_encode($badRequest);
+                                http_response_code(BAD_REQUEST->getStatus());
+                                echo json_encode(BAD_REQUEST);
                             }
                         } else {
-                            http_response_code($badRequest->getStatus());
-                            echo json_encode($badRequest);
+                            http_response_code(BAD_REQUEST->getStatus());
+                            echo json_encode(BAD_REQUEST);
                         }
                     }
                 } else {
-                    http_response_code($badRequest->getStatus());
-                    echo json_encode($badRequest);
+                    http_response_code(BAD_REQUEST->getStatus());
+                    echo json_encode(BAD_REQUEST);
                 }
                 break;
             case 'PUT':
@@ -120,13 +117,13 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 } else {
                     $user->setFkPortfolio($portfolioPk);
                     $_SESSION['user'] = $user;
-                    http_response_code($httpSuccessCode);
+                    http_response_code(HTTP_SUCCESS);
                     echo json_encode($user);
                 }
             }
         } else {
-            http_response_code($badRequest->getStatus());
-            echo json_encode($badRequest);
+            http_response_code(BAD_REQUEST->getStatus());
+            echo json_encode(BAD_REQUEST);
         }
     } else { //Utilisateur non autorisé
         http_response_code($userUnauthorized->getStatus());
