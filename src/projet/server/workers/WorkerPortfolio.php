@@ -102,14 +102,14 @@ class WorkerPortfolio
         } else {
             $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = :fk_stock WHERE name = :asset and fk_portfolio = :fk_portfolio";
             $params = array('fk_stock' => $fkStock, 'asset' => $stockName, 'fk_portfolio' => $user->getPkPortfolio());
-            $position = $this->db->selectQuerySingleReturn($query, $params);
+            $position = $this->db->selectQuerySingleResult($query, $params);
         }
         return $position;
     }
 
     /**
      * Méthode permettant de vérifier si l'action est déja enregistrée dans la DB et si ce n'est pas le cas, on va la créer à condition que le ticker existe
-     * 
+     * PS: Méthode 100% fonctionel sans time out depuis la maison
      * @param ticker le symbol représentant l'action
      * 
      * @return int la pk du stock ou une ErrorAnswer en cas de ticker invalide ou d'erreur avev la DB
@@ -119,45 +119,30 @@ class WorkerPortfolio
         $pkStock = NULL;
         try {
             //Demander a finhub si le ticker existe bel et bien
-            // $apiKey = "cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg";
-            // //$url = "https://finnhub.io/api/v1/stock/profile2?symbol=" . $ticker . "&token=" . $apiKey;
-            // $url = 'https://finnhub.io/api/v1/stock/profile2?symbol=SOUN&token=cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg';
-            // $url = 'https://finnhub.io/api/v1/stock/profile2?symbol=SOUN&token=cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg';
-
-            // $ch = curl_init();
-            // curl_setopt($ch, CURLOPT_URL, $url);
-            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 10);  // Timeout in seconds
-            // $response = curl_exec($ch);
-            // if (curl_errno($ch)) {
-            //     echo 'Error:' . curl_error($ch);
-            // } else {
-            //     echo $response;
-            // }
-            // curl_close($ch);
-            // $response = file_get_contents($url);
-            // $data = json_decode($response, true);
-            //Vérifier que le stock existe bel et bien
-            //if (isset($data["ticker"])) {
-            //Vérifier si le stock est déja dans la DB
-            $query = "select pk_stock from BaoBull.t_stock where name = :ticker";
-            $params = array('ticker' => $ticker);
-            $pkStock = $this->db->selectQuerySingleResult($query, $params);
-            if ($pkStock and !($pkStock instanceof ErrorAnswer)) {
-                $pkStock = $pkStock['pk_stock'];
-            } else {
-                //$query = 'INSERT INTO BaoBull.t_stock (name) VALUES (:ticker)';
-                //$params = $params = array('ticker' => $data['ticker']);
-                //$affectedRows = $this->db->executeQuery($query, $params);
-                //if (!($affectedRows instanceof ErrorAnswer) and $affectedRows == 1) {
-                // $pkStock = $this->db->getLastId('t_stock');
-                //}
-                $pkStock = new ErrorAnswer("The stock does not exist in the database", 404);
+            $apiKey = "cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg";
+            $url = "https://finnhub.io/api/v1/stock/profile2?symbol=" . urlencode($ticker) . "&token=" . $apiKey;
+            $response = file_get_contents($url);
+            $data = json_decode($response, true);
+            if (isset($data["ticker"])) {
+                //Vérifier si le stock est déja dans la db
+                $query = "select pk_stock from BaoBull.t_stock where name = :ticker";
+                $params = array('ticker' => $data["ticker"]);
+                $stock = $this->db->selectQuerySingleResult($query, $params);
+                if ($stock and !($stock instanceof ErrorAnswer)) {
+                    $pkStock = $stock['pk_stock'];
+                } else if (!($stock instanceof ErrorAnswer)) {
+                    $query = "INSERT INTO BaoBull.t_stock (name) VALUES (:ticker)";
+                    $params = $params = array('ticker' => $data["ticker"]);
+                    $affectedRows = $this->db->executeQuery($query, $params);
+                    if (!($affectedRows instanceof ErrorAnswer) and $affectedRows == 1) {
+                        $pkStock = $this->db->getLastId('t_stock');
+                    } else {
+                        $pkStock = $affectedRows;
+                    }
+                } else {
+                    $pkStock = $stock;
+                }
             }
-            /*} else {
-                //Changer le code de l'erreur
-                $pkStock =  new ErrorAnswer("Error, the symbol '" . $ticker . "' does not exist.", 500);
-            }*/
             return $pkStock;
         } catch (Exception $e) {
             http_response_code(500);
@@ -186,7 +171,7 @@ class WorkerPortfolio
             $fkStock = $this->verifyAsset($stockName);
             if ($fkStock instanceof ErrorAnswer) {
                 $toReturn = $fkStock;
-            }else{
+            } else {
                 $query = "";
                 $params = "";
                 //Vérifier si on a déja une position afin de faire qu'une entrée par stock
@@ -197,7 +182,6 @@ class WorkerPortfolio
                     $params = array('avgBuyPrice' => $avgPrice, 'boughtQuantity' => $totalAmount, 'fkPortfolio' => $user->getPkPortfolio(), 'fk_stock' => $fkStock);
                     $toReturn = $this->db->executeQuery($query, $params);
                 } else {
-                    //Si on à pas encore de position, on va premièrement checker si le ticker est déja présent ou non pour après créer la position
                     if ($fkStock) {
                         $query = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
                         $params = array('fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock, 'avgPrice' => $avgBuyPrice, 'boughtQuantity' => $boughtQuantity);
@@ -206,9 +190,65 @@ class WorkerPortfolio
                         $toReturn = new ErrorAnswer("The provided ticker does not exist.", 404);
                     }
                 }
-                if(!($toReturn instanceof ErrorAnswer)){
+                if (!($toReturn instanceof ErrorAnswer)) {
                     $toReturn = $this->getUserPositions();
                 }
+            }
+        }
+        return $toReturn;
+    }
+
+    /**
+     * Méthode permettant de réduire la taille d'une position.
+     * 
+     * @param stockName le nom du stock
+     * @param soldQuantity la quantité vendue
+     * @param avgSellPrice le prix de vente moyen
+     * 
+     * @return Array les positions de l'utilisateur mise à jours ou une erreur
+     */
+    public function sellStock($avgSellPrice, $soldQuantity, $stockName)
+    {
+        $user = $_SESSION['user'];
+        $existingPosition = $this->getSpecificUserPosition($stockName);
+        $toReturn = NULL;
+        //Si on a bien récuperer une position
+        if ($existingPosition instanceof ErrorAnswer) {
+            $toReturn = $existingPosition;
+        } else {
+            if ($existingPosition) {
+                $boughtQuantity = $existingPosition['boughtQuantity'];
+                $alreadySoldQuantity = $existingPosition['soldQuantity'];
+                $currentHoldingAmount = $boughtQuantity - $alreadySoldQuantity;
+                $avgSoldPrice = $existingPosition['avgSoldPrice'];
+                $fkStock = $this->verifyAsset($stockName);
+                if ($fkStock instanceof ErrorAnswer) {
+                    $toReturn = $fkStock;
+                } else if ($fkStock) {
+                    //Vérifier qu'on ait pas déjà tous vendu et que la quantité qu'on veut vendre soit pas trop grande
+                    if ($currentHoldingAmount > 0 and $soldQuantity <= $currentHoldingAmount) {
+                        $query = "update tr_portfolio_stock set soldQuantity=:soldQuantity, avgSoldPrice=:avgSoldPrice where fk_portfolio=:fkPortfolio and fk_stock = :fkStock";
+                        $params = "";
+                        //Vérifier si on à déjà vendu une fois ou pas
+                        if ($alreadySoldQuantity == 0) {
+                            $params = array('soldQuantity' => $soldQuantity, 'avgSoldPrice' => $avgSellPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
+                        } else {
+                            $totalSoldQuantity = $soldQuantity + $alreadySoldQuantity;
+                            $newAvgSoldPrice = ($alreadySoldQuantity * $avgSoldPrice + $soldQuantity * $avgSellPrice) / ($alreadySoldQuantity + $soldQuantity);
+                            $params = array('soldQuantity' => $totalSoldQuantity, 'avgSoldPrice' => $newAvgSoldPrice, 'fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock);
+                        }
+                        $affectedRows = $this->db->executeQuery($query, $params);
+                        if (!($affectedRows instanceof Error) and $affectedRows == 1) {
+                            $toReturn = $this->getUserPositions();
+                        } else {
+                            $toReturn = $affectedRows;
+                        }
+                    } else {
+                        $toReturn = new ErrorAnswer("Can not sell " . $soldQuantity . " shares of " . $stockName . " because you current holdings are too small.", 422);
+                    }
+                }
+            } else {
+                $toReturn = new ErrorAnswer("You do not have any position in " . $stockName, 400);
             }
         }
         return $toReturn;

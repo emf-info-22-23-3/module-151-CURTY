@@ -1,4 +1,13 @@
 <?php
+/**
+ * Script server.php
+ * 
+ * Script qui sert de endpoint pour les clients. Il va s'occuper de vérifer les paramètres reçus, 
+ * retransmettre la requête au bon worker et finalement renvoyer la réponse au client sous forme de JSON 
+ * @version 1.0
+ * @author Curty Esteban
+ * @project BaoBull
+ */
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, PUT");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -9,9 +18,7 @@ include_once('beans/User.php');
 include_once('workers/WorkerAuthentication.php');
 include_once('workers/WorkerPortfolio.php');
 if (isset($_SERVER['REQUEST_METHOD'])) {
-    //Déclaration des variables de base
-    $connexion = Connexion::getInstance();
-    $badRequest = new ErrorAnswer("Can not perform the requested action due to missing parameters.", 400);
+    $badRequest = new ErrorAnswer("Can not perform the requested action due to missing or invalid parameters.", 400);
     $userUnauthorized = new ErrorAnswer("The requested action requires you to be authenticated.", 401);
     $httpSuccessCode = 200;
     session_start();
@@ -23,7 +30,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             case 'GET':
                 if (isset($_GET['action'])) {
                     if ($_GET['action'] == 'getPositions') {
-                        $positions = $connexion->getUserPositions();
+                        $positions = WorkerPortfolio::getInstance()->getUserPositions();
                         if ($positions instanceof ErrorAnswer) {
                             http_response_code($positions->getStatus());
                             echo json_encode($positions);
@@ -52,7 +59,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                     } else if ($receivedParams['action'] == "addStock") {
                         if (isset($receivedParams['avgBuyPrice']) and isset($receivedParams['boughtQuantity']) and isset($receivedParams['asset'])) {
                             if (is_numeric($receivedParams['avgBuyPrice']) and $receivedParams['avgBuyPrice'] > 0 and is_numeric($receivedParams['boughtQuantity']) and $receivedParams['boughtQuantity'] > 0) {
-                                $newPositions = $connexion->addPosition($receivedParams['avgBuyPrice'], $receivedParams['boughtQuantity'], $receivedParams['asset']);
+                                $newPositions = WorkerPortfolio::getInstance()->addPosition($receivedParams['avgBuyPrice'], $receivedParams['boughtQuantity'], $receivedParams['asset']);
                                 if ($newPositions instanceof ErrorAnswer) {
                                     http_response_code($newPositions->getStatus());
                                     echo json_encode($newPositions);
@@ -71,8 +78,8 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                         }
                     } else if ($receivedParams['action'] == "sellStock") {
                         if (isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])) {
-                            if (is_numeric($receivedParams["avgSellPrice"]) and is_numeric($receivedParams["soldQuantity"])) {
-                                $result = $connexion->sellStock($receivedParams["avgSellPrice"], $receivedParams["soldQuantity"], $receivedParams['asset']);
+                            if (is_numeric($receivedParams["avgSellPrice"]) and $receivedParams["avgSellPrice"] > 0 and is_numeric($receivedParams["soldQuantity"]) and $receivedParams["soldQuantity"] > 0) {
+                                $result = WorkerPortfolio::getInstance()->sellStock($receivedParams["avgSellPrice"], $receivedParams["soldQuantity"], $receivedParams['asset']);
                                 if ($result instanceof ErrorAnswer) {
                                     http_response_code($result->getStatus());
                                     echo json_encode($result);
