@@ -54,6 +54,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                     } else if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);
                         session_destroy();
+                        http_response_code(HTTP_SUCCESS);
                     } else if ($receivedParams['action'] == "addStock") {
                         if (isset($receivedParams['avgBuyPrice']) and isset($receivedParams['boughtQuantity']) and isset($receivedParams['asset'])) {
                             if (is_numeric($receivedParams['avgBuyPrice']) and $receivedParams['avgBuyPrice'] > 0 and is_numeric($receivedParams['boughtQuantity']) and $receivedParams['boughtQuantity'] > 0) {
@@ -126,7 +127,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             echo json_encode(BAD_REQUEST);
         }
     } else { //Utilisateur non autorisé
-        http_response_code($userUnauthorized->getStatus());
-        echo json_encode($userUnauthorized);
+        http_response_code(UNAUTHORIZED->getStatus());
+        echo json_encode(UNAUTHORIZED);
     }
 }
