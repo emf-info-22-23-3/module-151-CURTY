@@ -1,30 +1,17 @@
 <?php
 class WorkerAuthentication
 {
-    private static $_instance = null;
     private $userDenied;
     private $db;
-    /**
-     * Méthode qui crée l'unique instance de la classe
-     * si elle n'existe pas encore puis la retourne.
-     *
-     * @return Singleton de la classe
-     */
-    public static function getInstance()
-    {
-        if (is_null(self::$_instance)) {
-            self::$_instance = new WorkerAuthentication();
-        }
-        return self::$_instance;
-    }
+
 
     /**
      * Méthode qui va initialiser les attributs de la classe
      */
-    private function __construct()
+    public function __construct()
     {
         $this->userDenied = new ErrorAnswer("The provided login/password does not match.", 401);
-        $this->db = Connexion::getInstance();
+        $this->db = WorkerDb::getInstance();
     }
 
     /**
@@ -47,5 +34,21 @@ class WorkerAuthentication
             $final = $this->userDenied;
         }
         return $final;
+    }
+
+    public function register($name, $familyName, $email, $password)
+    {
+        $query = "INSERT INTO t_user (name, familyName, email, password)VALUES (:name, :famName, :email, :password)";
+        $params = array(":name" => $name, ":famName" => $familyName, ":email" => $email, ":password" => password_hash($password, PASSWORD_DEFAULT));
+        $affectedRows = $this->db->executeQuery($query, $params);
+        $toReturn = NULL;
+        if ($affectedRows instanceof ErrorAnswer) {
+            $toReturn = $affectedRows;
+        } else if ($affectedRows and $affectedRows == 1) {
+            $toReturn = $this->authenticateUser($email, $password);
+        } else {
+            $toReturn = new ErrorAnswer("Unfortunately the server was not able to create the account.", 500);
+        }
+        return $toReturn;
     }
 }

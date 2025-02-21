@@ -10,7 +10,7 @@ include_once('configConnexion.php');
  * @project BaoBull
  */
 
-class Connexion
+class WorkerDb
 {
 
     private static $_instance = null;
@@ -26,7 +26,7 @@ class Connexion
     public static function getInstance()
     {
         if (is_null(self::$_instance)) {
-            self::$_instance = new connexion();
+            self::$_instance = new WorkerDb();
         }
         return self::$_instance;
     }
