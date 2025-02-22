@@ -31,7 +31,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
     if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                if (isset($_GET['action'])) {
+                if ($userCtrl->areParamsSet(array('action'), $_GET)) {
                     if ($_GET['action'] == 'getPositions') {
                         $positions = $portfolioCtrl->getUserPositions();
                         if ($positions instanceof ErrorAnswer) {
@@ -50,7 +50,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             case 'POST':
                 $json = file_get_contents('php://input');
                 $receivedParams = json_decode($json, TRUE);
-                if (isset($receivedParams['action'])) {
+                if ($userCtrl->areParamsSet(array('action'), $receivedParams)) {
                     if ($receivedParams['action'] == "login") {
                         http_response_code(HTTP_SUCCESS);
                         echo json_encode($_SESSION['user']);
@@ -59,7 +59,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                         session_destroy();
                         http_response_code(HTTP_SUCCESS);
                     } else if ($receivedParams['action'] == "addStock") {
-                        if (isset($receivedParams['avgBuyPrice']) and isset($receivedParams['boughtQuantity']) and isset($receivedParams['asset'])) {
+                        if ($userCtrl->areParamsSet(array('avgBuyPrice', 'boughtQuantity', 'asset'), $receivedParams)) {
                             $newPositions = $portfolioCtrl->addPosition($receivedParams['avgBuyPrice'], $receivedParams['boughtQuantity'], $receivedParams['asset']);
                             if ($newPositions instanceof ErrorAnswer) {
                                 http_response_code($newPositions->getStatus());
@@ -73,7 +73,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             echo json_encode(BAD_REQUEST);
                         }
                     } else if ($receivedParams['action'] == "sellStock") {
-                        if (isset($receivedParams["avgSellPrice"]) and isset($receivedParams["soldQuantity"]) and isset($receivedParams['asset'])) {
+                        if ($userCtrl->areParamsSet(array('avgSellPrice', 'soldQuantity', 'asset'), $receivedParams)) {
                             $result = $portfolioCtrl->sellStock($receivedParams["avgSellPrice"], $receivedParams["soldQuantity"], $receivedParams['asset']);
                             if ($result instanceof ErrorAnswer) {
                                 http_response_code($result->getStatus());
@@ -97,8 +97,8 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             case 'DELETE':
                 break;
         }
-    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($receivedParams['action']) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
-        if (isset($receivedParams['email']) and isset($receivedParams['password'])) {
+    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and $userCtrl->areParamsSet(array('action'), $receivedParams) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
+        if ($userCtrl->areParamsSet(array('email', 'password'), $receivedParams)) {
             $user = $userCtrl->authenticateUser($receivedParams['email'], $receivedParams['password']);
             if ($user instanceof ErrorAnswer) {
                 http_response_code($user->getStatus());
@@ -120,12 +120,24 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             echo json_encode(BAD_REQUEST);
         }
     } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($receivedParams['action']) and $receivedParams['action'] == 'register') {
-        if (isset($receivedParams['name']) and strlen(trim($receivedParams['name'])) > 5 and isset($receivedParams['familyName']) and strlen(trim($receivedParams['familyName'])) > 5) {
+        if ($userCtrl->areParamsSet(array('name', 'familyName', 'email', 'password'), $receivedParams)) {
+            $user = $userCtrl->registerUser($receivedParams['name'], $receivedParams['familyName'], $receivedParams['email'], $receivedParams['password']);
+            if ($user instanceof ErrorAnswer) {
+                http_response_code($user->getStatus());
+                echo json_encode($users);
+            } else {
+                $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
+                if ($portfolioPk instanceof ErrorAnswer) {
+                    http_response_code($portfolioPk->getStatus());
+                    echo json_encode($portfolioPk);
+                } else {
+                    $user->setFkPortfolio($portfolioPk);
+                    $_SESSION['user'] = $user;
+                    http_response_code(HTTP_SUCCESS);
+                    echo json_encode($user);
+                }
+            }
         }
-        //WorkerAuthentication::getInstance()->register();
-
-        //email
-        //password
     } else { //Utilisateur non autorisé
         http_response_code(UNAUTHORIZED->getStatus());
         echo json_encode(UNAUTHORIZED);

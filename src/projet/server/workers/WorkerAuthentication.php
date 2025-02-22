@@ -35,7 +35,16 @@ class WorkerAuthentication
         }
         return $final;
     }
-
+    /**
+     * Méthode permettant de créer une nouveau compte utilisateur dans la DB
+     * 
+     * @param $name le nom de l'utilisateur
+     * @param $familyName le nom de famille de l'utilisateur
+     * @param $email l'adresse email de l'utilisateur
+     * @param $password le mot de passe de l'utilisateur
+     * 
+     * @return User un objet de type user avec les inforamtions sur celui-ci
+     */
     public function register($name, $familyName, $email, $password)
     {
         $query = "INSERT INTO t_user (name, familyName, email, password)VALUES (:name, :famName, :email, :password)";

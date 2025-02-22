@@ -18,7 +18,12 @@ class UserCtrl
         }
         return $toReturn;
     }
-    public function registerUser() {}
+    public function registerUser($name, $familyName, $email, $password)
+    {
+        $toReturn = NULL;
+        $toReturn = $this->workerAuthentication->register($name, $familyName, $email, $password);
+        return $toReturn;
+    }
 
     /**
      * Méthode permettant de vérifier qu'un champ est belle est bien un string et qu'il contienne plus que 5 caractères.
@@ -62,5 +67,24 @@ class UserCtrl
             $isValid = true;
         }
         return $isValid;
+    }
+    /**
+     * Méthode permettant de vérifier que les paramètres soient bien définit
+     * 
+     * @param $params Un tableau avec les paramètres a vérifier
+     * @param $data Un tableau qui contient les données recues
+     * 
+     * @return Boolean qui indique si tous les paramtères sont set ou non
+     */
+    public function areParamsSet($params, $data)
+    {
+        $allSet = true;
+        foreach ($params as $param) {
+            if (!isset($data[$param])) {
+                $allSet = false;
+                break;
+            }
+        }
+        return $allSet;
     }
 }
