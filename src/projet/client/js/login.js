@@ -1,33 +1,63 @@
 $(document).ready(function () {
-    window.loginCtrl = new Login();
-  });
-class Login{
-    constructor(){
-        this.httpServ = new HttpService();
-        this.httpServ.setErrorHandling((message) => this.displayError(message));
-        this.setListeners();
-    }
-    setListeners(){
-        $("#btnSubmit").click((e) =>{
-            let email = $("#email").val();
-            let password = $("#password").val();
-            this.httpServ.authenticateUser(()=>{window.location.replace("/projet/client/portfolio.html");
-          },email,password);
-        });
-    }
-    displayError(messsage) {
-        let html = `<div class="alert bg-danger d-flex justify-content-between align-items-center" role="alert">
-                    <p class="m-1">${messsage}</p>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>`;
-        $("#popUp").html(html);
-        $("#popUp").removeClass("d-none");
-        $("#popUp").addClass("d-flex");
-        setTimeout(() => {
-          $("#popUp").fadeOut(function () {
-            $("#popUp").addClass("d-none");
-            $("#popUp").html("");
-          });
-        }, 5000);
+  window.loginCtrl = new Login();
+});
+class Login {
+  constructor() {
+    this.httpServ = new HttpService();
+    this.httpServ.setErrorHandling((message) => this.displayError(message));
+    this.setListeners();
+    this.isLogin = true;
+  }
+  setListeners() {
+    $("#btnSubmit").click((e) => {
+      this.handleUserConnexionRequest();
+    });
+    $("#otherOption").on("click", "#register", (e) => {
+      e.preventDefault();
+      if (this.isLogin) {
+        this.isLogin = false;
+        $("#name-cont").removeClass("d-none");
+        $("#famName-cont").removeClass("d-none");
+        $("#password-conf-cont").removeClass("d-none");
+        $("#otherOption").html(`<p >Vous avez déja un compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">Se connecter</a></p>`);
+      } else {
+        this.isLogin = true;
+        $("#name-cont").addClass("d-none");
+        $("#famName-cont").addClass("d-none");
+        $("#password-conf-cont").addClass("d-none");
+        $("#otherOption").html(`<p >Vous n'avez pas de compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">S'inscrire</a></p>`);
       }
+    });
+  }
+  handleUserConnexionRequest() {
+    let email = $("#email").val();
+    let password = $("#password").val();
+    if (this.isLogin) {
+      this.httpServ.authenticateUser(() => {
+        window.location.href = "../client/portfolio.html";
+      }, email, password);
+    } else {
+      let name = $("#name").val();
+      let familyName = $("#familyName").val();
+      let email = $("#email").val();
+      let passwordConfirmation = $("#password-confirmation").val();
+      if (passwordConfirmation === password) {
+        this.httpServ.createAccount(name, familyName, email, password, () => { window.location.href = "../client/portfolio.html"; });
+      } else {
+        this.displayError("Les mots de passe ne correspondent pas");
+      }
+    }
+
+  }
+  displayError(message) {
+    $("#error-message").text(message);
+    $("#error-container").hide().removeClass("d-none").fadeIn(300);
+
+    // Optional: Auto-hide the message after a few seconds
+    setTimeout(() => {
+      $("#error-container").fadeOut(300, () => {
+        $("#error-container").addClass("d-none"); // Hide properly again
+      });
+    }, 5000);
+  }
 }

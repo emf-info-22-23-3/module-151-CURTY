@@ -124,7 +124,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
             $user = $userCtrl->registerUser($receivedParams['name'], $receivedParams['familyName'], $receivedParams['email'], $receivedParams['password']);
             if ($user instanceof ErrorAnswer) {
                 http_response_code($user->getStatus());
-                echo json_encode($users);
+                echo json_encode($user);
             } else {
                 $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
                 if ($portfolioPk instanceof ErrorAnswer) {

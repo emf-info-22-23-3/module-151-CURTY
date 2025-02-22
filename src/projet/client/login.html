@@ -40,7 +40,11 @@
         </div>
       </nav>
     </header>
-
+    <div id="error-container" class="position-fixed top-15 start-50 translate-middle-x z-3 d-none">
+  <div class="alert alert-danger" role="alert" id="error-message">
+</div>
+</div>
+    </div>
     <section id="mainform" class="mb-2">
       <!-- Login Container -->
   <div class="container">
@@ -53,23 +57,34 @@
           </div>
           
           <form>
+            <div class="mb-3 d-none" id="name-cont">
+              <label for="name" class="form-label fw-medium">Nom</label>
+              <input type="name" class="form-control" id="name" placeholder="Entrez votre nom">
+            </div>        
+            <div class="mb-3 d-none" id="famName-cont">
+              <label for="familyName" class="form-label fw-medium">Nom de famille</label>
+              <input type="familyName" class="form-control" id="familyName" placeholder="Entrez votre nom de famille">
+            </div>        
             <div class="mb-3">
               <label for="email" class="form-label fw-medium">Adresse e-mail</label>
               <input type="email" class="form-control" id="email" placeholder="Entrez votre adresse e-mail">
             </div>
-            
             <div class="mb-3">
               <label for="password" class="form-label fw-medium">Mot de passe</label>
               <input type="password" class="form-control" id="password" placeholder="Entrez votre mot de passe">
-            </div>            
+            </div> 
+            <div class="mb-3 d-none" id="password-conf-cont">
+              <label for="password" class="form-label fw-medium">Mot de passe</label>
+              <input type="password" class="form-control" id="password-confirmation" placeholder="Confirmez votre mot de passe">
+            </div>               
             <button type="submit" class="button btn-rolex w-100" id="btnSubmit">Se connecter</button>
           </form>
           <div class="divider">
             <span class="px-2 bg-white">Ou</span>
           </div>          
           <!-- Sign Up Link -->
-          <div class="text-center mt-3">
-            <p>Vous n'avez pas de compte? <a href="#" class="text-decoration-none text-rolex fw-medium">S'inscrire</a></p>
+          <div class="text-center mt-3" id="otherOption">
+            <p id="register">Vous n'avez pas de compte? <a href="#" class="text-rolex fw-medium">S'inscrire</a></p>
           </div>
         </div>
       </div>
