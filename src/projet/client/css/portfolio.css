@@ -18,14 +18,14 @@
 .btn-rolex {
   background-color: var(--rolex-green) !important;
   color: white !important;
-              width: 100%;
+  width: 100%;
 }
 
 .btn-rolex:hover {
   background-color: #004d2e;
   color: white;
 }
-       .new-position-row input {
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-        }
+.new-position-row input {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}

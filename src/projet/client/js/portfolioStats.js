@@ -1,28 +1,13 @@
 class PortfolioStats {
     constructor(httpServ) {
-        this.stats = {
-            "stats": {
-                "totalValue": 0,//
-                "plTodayPercentage": 0,//
-                "plTodayMoney": 0,//
-                "yesterdayValue": 0,//
-                "amountOfProfitFirms": 0,//
-                "totalPlMoney": 0,//
-                "totalPlPercentage": 0,//
-                "totalInvested": 0,//
-                "amountPostions": 0,//
-                "biggestWinnerName": "",//
-                "biggestWinnerGainPercentage": 0//
-            },
-            "positions": [
-            ]
-        }
+        this.stats = this.getDefaulStats();
         this.textRed = "text-danger";
         this.textGreen = "text-rolex";
         this.httpServ = httpServ;
     }
     refreshStats(positions) {
-        this.stats.stats.amountPostions = positions.length;
+        this.stats = this.getDefaulStats();
+        $('#positions').children().not('.new-position-row').remove();
         for (let i = 0; i < positions.length; i++) {
             let position = positions[i];
             let avgBuyPrice = position.avgBuyPrice;
@@ -38,6 +23,7 @@ class PortfolioStats {
         let previousClose = data.pc
         let currentHolding = boughtQuantity - soldQuantity;
         if (currentHolding != 0) {
+            this.stats.stats.amountPostions++;
             let holdingValue = currentHolding * currentPrice;
             this.stats.stats.totalValue += holdingValue;
 
@@ -131,7 +117,7 @@ class PortfolioStats {
             let stock = e.target.id;
             let quantity = prompt("Veuillez entrer la quantité vendue");
             let avgSellPrice = prompt("Veuillez entrer le prix moyen de vente: ");
-            this.httpServ.sellStock(stock, avgSellPrice, quantity, (json) => { console.log(json) })
+            this.httpServ.sellStock(stock, avgSellPrice, quantity, (positions) => { this.refreshStats(positions) })
         });
     }
     formatNumber(number) {
@@ -140,5 +126,24 @@ class PortfolioStats {
             maximumFractionDigits: 2
         };
         return parseFloat(number).toLocaleString(undefined, numberFormatOption);
+    }
+    getDefaulStats() {
+        return {
+            "stats": {
+                "totalValue": 0,//
+                "plTodayPercentage": 0,//
+                "plTodayMoney": 0,//
+                "yesterdayValue": 0,//
+                "amountOfProfitFirms": 0,//
+                "totalPlMoney": 0,//
+                "totalPlPercentage": 0,//
+                "totalInvested": 0,//
+                "amountPostions": 0,//
+                "biggestWinnerName": "",//
+                "biggestWinnerGainPercentage": 0//
+            },
+            "positions": [
+            ]
+        };
     }
 }

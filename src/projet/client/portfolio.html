@@ -135,13 +135,22 @@
               </thead>
               <tbody id="positions">
                 <tr class="new-position-row">
-                  <td><input type="text" placeholder="Symbol" /></td>
-                  <td><input type="number" placeholder="Shares" /></td>
+                  <td>
+                    <input type="text" placeholder="Symbol" id="symbol" />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      placeholder="Shares"
+                      id="boughtAmount"
+                    />
+                  </td>
                   <td>
                     <input
                       type="number"
                       step="0.01"
                       placeholder="Entry Price"
+                      id="avgBuyPrice"
                     />
                   </td>
                   <td>--</td>
