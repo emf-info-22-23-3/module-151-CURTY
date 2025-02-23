@@ -75,6 +75,21 @@ class HttpService {
       success: successCallback
     });
   }
+  sellStock(symbol, avgSellPrice, soldQuantity, successCallback) {
+    let body = {
+      "action": "sellStock",
+      "avgSellPrice": avgSellPrice,
+      "soldQuantity": soldQuantity,
+      "asset": symbol
+    }
+    $.ajax({
+      type: "POST",
+      url: this.endpoint,
+      data: JSON.stringify(body),
+      dataType: "JSON",
+      success: successCallback
+    });
+  }
   /**
    * Méthode permettant de centraliser la gestion d'erreur
    * @param {function} callback
@@ -82,7 +97,11 @@ class HttpService {
   setErrorHandling(callback) {
     $.ajaxSetup({
       error: function (xhr, exception) {
-        callback(`[${xhr.status}] ${JSON.parse(xhr.responseText).message}`);
+        if (xhr.responseText != "") {
+          callback(`[${xhr.status}] ${JSON.parse(xhr.responseText).message}`);
+        } else {
+          callback(`[${xhr.status}] Erreur non identifiée`);
+        }
       },
     });
   }

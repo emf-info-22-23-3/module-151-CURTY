@@ -88,7 +88,6 @@ class PortfolioStats {
             $("#totalPlPercentage").removeClass(this.textGreen + " " + this.textRed).addClass(((this.stats.stats.totalPlPercentage >= 0) ? this.textGreen : this.textRed));
             $("#totalInvested").text("$ " + this.formatNumber(this.stats.stats.totalInvested));
             $("#biggestPerf").text("Sur la lune " + this.stats.stats.biggestWinnerName + " " + this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) + "%");
-            console.log(typeof this.stats.stats.totalPlMoney, this.stats.stats.totalPlMoney);
         }
 
     }
@@ -118,8 +117,7 @@ class PortfolioStats {
         closePositionButton.classList.add("btn");
         closePositionButton.classList.add("btn-rolex");
         closePositionButton.classList.add("btn-sm");
-
-        $("#positions").append(tr);
+        $("#positions").prepend(tr);
         $(tr).append(trName);
         $(tr).append(trShare);
         $(tr).append(trEntryPrice);
@@ -129,6 +127,12 @@ class PortfolioStats {
         $(tr).append(trTotalPl);
         $(tr).append(trClosePosition);
         $(trClosePosition).append(closePositionButton);
+        $(closePositionButton).click((e) => {
+            let stock = e.target.id;
+            let quantity = prompt("Veuillez entrer la quantité vendue");
+            let avgSellPrice = prompt("Veuillez entrer le prix moyen de vente: ");
+            this.httpServ.sellStock(stock, avgSellPrice, quantity, (json) => { console.log(json) })
+        });
     }
     formatNumber(number) {
         let numberFormatOption = {

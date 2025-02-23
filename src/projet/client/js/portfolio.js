@@ -7,6 +7,12 @@ class Portfolio {
         this.httpServ.setErrorHandling((message) => this.displayError(message));
         this.portfolioStats = new PortfolioStats(this.httpServ);
         this.getPositions();
+        this.setListener();
+    }
+    setListener() {
+        $("#logOut").click((e) => {
+            this.httpServ.logOut(() => { window.location.href = "../client/login.html" });
+        });
     }
     getPositions() {
         this.httpServ.getUserPositions((positions) => this.portfolioStats.refreshStats(positions));

@@ -51,6 +51,14 @@ class Ctrl {
     if (this.userAuthenticated) {
       element.href = "#";
       element.text = "Déconnexion";
+      let portfolio = document.createElement("li");
+      portfolio.classList.add("nav-item");
+      let link = document.createElement("a");
+      link.classList.add("nav-link");
+      link.href = "../client/portfolio.html";
+      link.textContent = "Mon portfolio";
+      $("#navMenu").append(portfolio);
+      $(portfolio).append(link);
     } else {
       element.href = "#";
       element.text = "Connexion";

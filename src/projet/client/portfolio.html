@@ -48,7 +48,7 @@
                 <a class="nav-link" href="index.html#news">News</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Déconnexion</a>
+                <a class="nav-link" href="#" id="logOut">Déconnexion</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active-nav-link" href="#">Mon portfolio</a>
@@ -133,7 +133,28 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="positions"></tbody>
+              <tbody id="positions">
+                <tr class="new-position-row">
+                  <td><input type="text" placeholder="Symbol" /></td>
+                  <td><input type="number" placeholder="Shares" /></td>
+                  <td>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Entry Price"
+                    />
+                  </td>
+                  <td>--</td>
+                  <td>--</td>
+                  <td>--</td>
+                  <td>--</td>
+                  <td>
+                    <button class="btn btn-rolex btn-sm" id="buyBtn">
+                      Acheter
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
