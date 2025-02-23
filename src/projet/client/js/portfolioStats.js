@@ -17,6 +17,8 @@ class PortfolioStats {
             "positions": [
             ]
         }
+        this.textRed = "text-danger";
+        this.textGreen = "text-rolex";
         this.httpServ = httpServ;
     }
     refreshStats(positions) {
@@ -71,22 +73,22 @@ class PortfolioStats {
                 "totalPl": totalPlPercentage
             }
             this.stats.positions.push(position);
-            this.refreshGui(position);
-            this.stats.stats.plTodayPercentage = -1 * (100 - this.stats.stats.yesterdayValue * 100 / this.stats.stats.totalValue);
+            this.stats.stats.plTodayPercentage = -1 * (100 - this.stats.stats.totalValue * 100 / this.stats.stats.yesterdayValue);
             this.stats.stats.totalPlPercentage = -1 * (100 - this.stats.stats.totalValue * 100 / this.stats.stats.totalInvested);
+            this.refreshGui(position);
             $("#pfValue").text("$ " + this.formatNumber(this.stats.stats.totalValue));
             $("#todaysPLPercentage").html(`<i class="bi ${(this.stats.stats.plTodayPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.plTodayPercentage) + "% today");
-            $("#todaysPLPercentage").addClass(((this.stats.stats.plTodayPercentage >= 0) ? 'text-success' : 'text-danger'));
+            $("#todaysPLPercentage").addClass(((this.stats.stats.plTodayPercentage >= 0) ? this.textGreen : this.textRed));
             $("#todayPLMoney").text("$ " + this.formatNumber(this.stats.stats.plTodayMoney));
-            $("#todayPLMoney").addClass(((this.stats.stats.plTodayMoney >= 0) ? 'text-success' : 'text-danger'));
+            $("#todayPLMoney").addClass(((this.stats.stats.plTodayMoney >= 0) ? this.textGreen : this.textRed));
             $("#nbrProfitPositions").text(this.stats.stats.amountOfProfitFirms + " in profit");
             $("#totalPLMoney").text("$ " + this.formatNumber(this.stats.stats.totalPlMoney));
-            $("#totalPLMoney").addClass(((this.stats.stats.totalPLMoney >= 0) ? 'text-success' : 'text-danger'));
+            $("#totalPLMoney").removeClass(this.textGreen + " " + this.textRed).addClass(((this.stats.stats.totalPlMoney >= 0) ? this.textGreen : this.textRed));
             $("#totalPlPercentage").html(`<i class="bi ${(this.stats.stats.totalPlPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.totalPlPercentage) + "% overall");
-            $("#totalPlPercentage").addClass(((this.stats.stats.totalPlPercentage >= 0) ? 'text-success' : 'text-danger'));
+            $("#totalPlPercentage").removeClass(this.textGreen + " " + this.textRed).addClass(((this.stats.stats.totalPlPercentage >= 0) ? this.textGreen : this.textRed));
             $("#totalInvested").text("$ " + this.formatNumber(this.stats.stats.totalInvested));
-            $("#biggestPerf").text("Biggest perf. " + this.stats.stats.biggestWinnerName + " " + this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) + "%");
-            console.log(this.stats.stats)
+            $("#biggestPerf").text(this.stats.stats.biggestWinnerName + " " + this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) + "%");
+            console.log(typeof this.stats.stats.totalPlMoney, this.stats.stats.totalPlMoney);
         }
 
     }
