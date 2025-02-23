@@ -1,7 +1,9 @@
 class HttpService {
   constructor() {
+    this.finHubApiKey = "cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg";
     this.newsUrl =
-      "https://finnhub.io/api/v1/news?category=general&token=cudscnhr01qiosq11fb0cudscnhr01qiosq11fbg";
+      "https://finnhub.io/api/v1/news?category=general&token=" + this.finHubApiKey;
+    this.finHubURL = "https://finnhub.io/api/v1/quote?symbol=";
     this.endpoint = "../../projet/server/server.php";
   }
 
@@ -12,7 +14,16 @@ class HttpService {
       dataType: "JSON",
       url: this.endpoint,
       data: JSON.stringify(body),
-      contentType: "application/json",
+      success: successCallback
+    });
+  }
+  logOut(successCallback) {
+    let body = { "action": "disconnect" };
+    $.ajax({
+      type: "POST",
+      dataType: "JSON",
+      url: this.endpoint,
+      data: JSON.stringify(body),
       success: successCallback
     });
   }
@@ -23,23 +34,45 @@ class HttpService {
       "familyName": familyName,
       "email": email,
       "password": password
-    }
+    };
     $.ajax({
       type: "POST",
       dataType: "JSON",
       url: this.endpoint,
       data: JSON.stringify(body),
-      contentType: "application/json",
       success: successCallback
     });
   }
-
+  getUserState(successCallback) {
+    $.ajax({
+      type: "GET",
+      url: this.endpoint + "?action=userState",
+      dataType: "JSON",
+      success: successCallback
+    });
+  }
+  getUserPositions(successCallback) {
+    $.ajax({
+      type: "GET",
+      url: this.endpoint + "?action=getPositions",
+      dataType: "JSON",
+      success: successCallback
+    });
+  }
   getLatestNews(successCallback) {
     $.ajax({
       type: "GET",
       url: this.newsUrl,
       dataType: "JSON",
       success: successCallback,
+    });
+  }
+  getStockPrice(symbol, successCallback) {
+    $.ajax({
+      type: "GET",
+      url: this.finHubURL + symbol + "&token=" + this.finHubApiKey,
+      dataType: "JSON",
+      success: successCallback
     });
   }
   /**
@@ -49,7 +82,7 @@ class HttpService {
   setErrorHandling(callback) {
     $.ajaxSetup({
       error: function (xhr, exception) {
-        callback(`[${xhr.status}] ` + JSON.parse(xhr.responseText).message);
+        callback(`[${xhr.status}] ${JSON.parse(xhr.responseText).message}`);
       },
     });
   }

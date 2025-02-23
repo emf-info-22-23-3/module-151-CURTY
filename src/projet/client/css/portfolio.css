@@ -1,0 +1,26 @@
+:root {
+  --rolex-green: #006039;
+  --rolex-green-dark: #00502f;
+}
+
+.bg-rolex {
+  background-color: var(--rolex-green) !important;
+}
+
+.text-rolex {
+  color: var(--rolex-green);
+}
+
+.border-rolex {
+  border-color: var(--rolex-green) !important;
+}
+
+.btn-rolex {
+  background-color: var(--rolex-green) !important;
+  color: white !important;
+}
+
+.btn-rolex:hover {
+  background-color: #004d2e;
+  color: white;
+}

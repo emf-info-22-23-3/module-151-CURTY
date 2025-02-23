@@ -36,6 +36,22 @@ class WorkerAuthentication
         return $final;
     }
     /**
+     * Méthode permettant de vérifier si un email existe déja dans la DB ou non.
+     */
+    private function emailAlreadyExists($email)
+    {
+        $query = "SELECT pk_user FROM t_user WHERE email = :email";
+        $params = array('email' => $email);
+        $pkuser = $this->db->selectQuerySingleResult($query, $params);
+        $exists = false;
+        if ($pkuser instanceof ErrorAnswer) {
+            $exists = $pkuser;
+        } else if ($pkuser) {
+            $exists = true;
+        }
+        return $exists;
+    }
+    /**
      * Méthode permettant de créer une nouveau compte utilisateur dans la DB
      * 
      * @param $name le nom de l'utilisateur
@@ -47,16 +63,24 @@ class WorkerAuthentication
      */
     public function register($name, $familyName, $email, $password)
     {
-        $query = "INSERT INTO t_user (name, familyName, email, password)VALUES (:name, :famName, :email, :password)";
-        $params = array(":name" => $name, ":famName" => $familyName, ":email" => $email, ":password" => password_hash($password, PASSWORD_DEFAULT));
-        $affectedRows = $this->db->executeQuery($query, $params);
         $toReturn = NULL;
-        if ($affectedRows instanceof ErrorAnswer) {
-            $toReturn = $affectedRows;
-        } else if ($affectedRows and $affectedRows == 1) {
-            $toReturn = $this->authenticateUser($email, $password);
+
+        $emailExists = $this->emailAlreadyExists($email);
+        if ($emailExists instanceof ErrorAnswer) {
+            $toReturn = $email;
+        } else if ($email) {
+            $toReturn = new ErrorAnswer("The provided email is already linked with another account.", 409);
         } else {
-            $toReturn = new ErrorAnswer("Unfortunately the server was not able to create the account.", 500);
+            $query = "INSERT INTO t_user (name, familyName, email, password)VALUES (:name, :famName, :email, :password)";
+            $params = array(":name" => $name, ":famName" => $familyName, ":email" => $email, ":password" => password_hash($password, PASSWORD_DEFAULT));
+            $affectedRows = $this->db->executeQuery($query, $params);
+            if ($affectedRows instanceof ErrorAnswer) {
+                $toReturn = $affectedRows;
+            } else if ($affectedRows and $affectedRows == 1) {
+                $toReturn = $this->authenticateUser($email, $password);
+            } else {
+                $toReturn = new ErrorAnswer("Unfortunately the server was not able to create the account.", 500);
+            }
         }
         return $toReturn;
     }

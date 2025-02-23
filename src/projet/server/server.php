@@ -27,8 +27,59 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
     $receivedParams = json_decode($json, TRUE);
     $portfolioCtrl = new PortfolioCtrl();
     $userCtrl = new UserCtrl();
-    //Vérifier que l'utilisateur soit authitifiée avant de le laisser faire quelque chose d'autre que se logguer
-    if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' and $userCtrl->areParamsSet(array('action'), $receivedParams) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
+        if ($userCtrl->areParamsSet(array('email', 'password'), $receivedParams)) {
+            $user = $userCtrl->authenticateUser($receivedParams['email'], $receivedParams['password']);
+            if ($user instanceof ErrorAnswer) {
+                session_destroy();
+                http_response_code($user->getStatus());
+                echo json_encode($user);
+            } else {
+                $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
+                if ($portfolioPk instanceof ErrorAnswer) {
+                    session_destroy();
+                    http_response_code($portfolioPk->getStatus());
+                    echo json_encode($portfolioPk);
+                } else {
+                    $user->setFkPortfolio($portfolioPk);
+                    $_SESSION['user'] = $user;
+                    http_response_code(HTTP_SUCCESS);
+                    echo json_encode($user);
+                }
+            }
+        } else {
+            http_response_code(BAD_REQUEST->getStatus());
+            echo json_encode(BAD_REQUEST);
+        }
+    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and $userCtrl->areParamsSet(array('action'), $receivedParams) and $receivedParams['action'] == 'register') {
+        if ($userCtrl->areParamsSet(array('name', 'familyName', 'email', 'password'), $receivedParams)) {
+            $user = $userCtrl->registerUser($receivedParams['name'], $receivedParams['familyName'], $receivedParams['email'], $receivedParams['password']);
+            if ($user instanceof ErrorAnswer) {
+                session_destroy();
+                http_response_code($user->getStatus());
+                echo json_encode($user);
+            } else {
+                $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
+                if ($portfolioPk instanceof ErrorAnswer) {
+                    session_destroy();
+                    http_response_code($portfolioPk->getStatus());
+                    echo json_encode($portfolioPk);
+                } else {
+                    $user->setFkPortfolio($portfolioPk);
+                    $_SESSION['user'] = $user;
+                    http_response_code(HTTP_SUCCESS);
+                    echo json_encode($user);
+                }
+            }
+        }
+    } else if ($_SERVER['REQUEST_METHOD'] == 'GET' and $userCtrl->areParamsSet(array('action'), $_GET) and $_GET['action'] == 'userState') {
+        http_response_code(200);
+        if (isset($_SESSION['user'])) {
+            echo json_encode($_SESSION['user']->isauthenticated());
+        } else {
+            echo json_encode(false);
+        }
+    } else  if (isset($_SESSION['user']) and $_SESSION['user']->isauthenticated()) {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
                 if ($userCtrl->areParamsSet(array('action'), $_GET)) {
@@ -51,10 +102,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 $json = file_get_contents('php://input');
                 $receivedParams = json_decode($json, TRUE);
                 if ($userCtrl->areParamsSet(array('action'), $receivedParams)) {
-                    if ($receivedParams['action'] == "login") {
-                        http_response_code(HTTP_SUCCESS);
-                        echo json_encode($_SESSION['user']);
-                    } else if ($receivedParams['action'] == "disconnect") {
+                    if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);
                         session_destroy();
                         http_response_code(HTTP_SUCCESS);
@@ -96,47 +144,6 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 break;
             case 'DELETE':
                 break;
-        }
-    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and $userCtrl->areParamsSet(array('action'), $receivedParams) and $receivedParams['action'] == 'login') { //Un utilisateur authentifié peut uniquement se logguer
-        if ($userCtrl->areParamsSet(array('email', 'password'), $receivedParams)) {
-            $user = $userCtrl->authenticateUser($receivedParams['email'], $receivedParams['password']);
-            if ($user instanceof ErrorAnswer) {
-                http_response_code($user->getStatus());
-                echo json_encode($user);
-            } else {
-                $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
-                if ($portfolioPk instanceof ErrorAnswer) {
-                    http_response_code($portfolioPk->getStatus());
-                    echo json_encode($portfolioPk);
-                } else {
-                    $user->setFkPortfolio($portfolioPk);
-                    $_SESSION['user'] = $user;
-                    http_response_code(HTTP_SUCCESS);
-                    echo json_encode($user);
-                }
-            }
-        } else {
-            http_response_code(BAD_REQUEST->getStatus());
-            echo json_encode(BAD_REQUEST);
-        }
-    } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and isset($receivedParams['action']) and $receivedParams['action'] == 'register') {
-        if ($userCtrl->areParamsSet(array('name', 'familyName', 'email', 'password'), $receivedParams)) {
-            $user = $userCtrl->registerUser($receivedParams['name'], $receivedParams['familyName'], $receivedParams['email'], $receivedParams['password']);
-            if ($user instanceof ErrorAnswer) {
-                http_response_code($user->getStatus());
-                echo json_encode($user);
-            } else {
-                $portfolioPk = $portfolioCtrl->getUserPkPortfolio($user->getPk());
-                if ($portfolioPk instanceof ErrorAnswer) {
-                    http_response_code($portfolioPk->getStatus());
-                    echo json_encode($portfolioPk);
-                } else {
-                    $user->setFkPortfolio($portfolioPk);
-                    $_SESSION['user'] = $user;
-                    http_response_code(HTTP_SUCCESS);
-                    echo json_encode($user);
-                }
-            }
         }
     } else { //Utilisateur non autorisé
         http_response_code(UNAUTHORIZED->getStatus());

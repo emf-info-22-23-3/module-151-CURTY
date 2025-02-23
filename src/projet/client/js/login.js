@@ -52,11 +52,9 @@ class Login {
   displayError(message) {
     $("#error-message").text(message);
     $("#error-container").hide().removeClass("d-none").fadeIn(300);
-
-    // Optional: Auto-hide the message after a few seconds
     setTimeout(() => {
       $("#error-container").fadeOut(300, () => {
-        $("#error-container").addClass("d-none"); // Hide properly again
+        $("#error-container").addClass("d-none");
       });
     }, 5000);
   }

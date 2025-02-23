@@ -23,5 +23,4 @@ body {
 
 .active-nav-link {
   color: var(--rolex-green) !important;
-  border-bottom: 2px solid var(--rolex-green);
 }

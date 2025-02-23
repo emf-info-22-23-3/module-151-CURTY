@@ -8,6 +8,7 @@ class Ctrl {
     this.marketOptionClickedClass = "marketOptionSelected";
     this.httpServ = new HttpService();
     this.httpServ.setErrorHandling((message) => this.displayError(message));
+    this.userAuthenticated = false;
   }
   loadIndex() {
     //Hide every chart
@@ -40,6 +41,29 @@ class Ctrl {
     );
     $(this.marketOptionClass).first().click();
     this.getLatestNews();
+    this.httpServ.getUserState((state) => this.setUserMenu(state));
+  }
+  setUserMenu(userState) {
+    this.userAuthenticated = userState;
+    let element = document.createElement("a");
+    element.classList.add("nav-link");
+    element.id = "logInOut";
+    if (this.userAuthenticated) {
+      element.href = "#";
+      element.text = "Déconnexion";
+    } else {
+      element.href = "#";
+      element.text = "Connexion";
+    }
+    $("#connexionMenu").empty();
+    $("#connexionMenu").append(element);
+    $("#logInOut").click((e) => {
+      if (this.userAuthenticated) {
+        this.httpServ.logOut(() => { window.location.href = "../client/login.html" });
+      } else {
+        window.location.href = "../client/login.html";
+      }
+    });
   }
   getLatestNews() {
     let latestNews = this.httpServ.getLatestNews((news) =>
@@ -67,10 +91,10 @@ class Ctrl {
       source.classList.add("news-source");
       source.classList.add("d-flex");
       source.classList.add("gap-2");
-      source.innerHTML = '<i class="bi bi-newspaper"></i>'+element["source"];
+      source.innerHTML = '<i class="bi bi-newspaper"></i>' + element["source"];
 
       let title = document.createElement("h5");
-      title.textContent = element["headline"]; 
+      title.textContent = element["headline"];
       title.classList.add("card-title");
 
       let cardText = document.createElement("p");
@@ -80,18 +104,18 @@ class Ctrl {
 
       let publishedTime = document.createElement("p");
       let timestamp = element["datetime"];
-      let articleDate  = new Date(timestamp*1000);
+      let articleDate = new Date(timestamp * 1000);
       let day = String(articleDate.getDate()).padStart(2, '0');
       let month = String(articleDate.getMonth() + 1).padStart(2, '0');
       let year = articleDate.getFullYear();
-      let formattedDate = day+"."+month+"."+year;
+      let formattedDate = day + "." + month + "." + year;
       publishedTime.classList.add("card-text");
       publishedTime.classList.add("text-muted");
-      publishedTime.innerText = "Published on the "+formattedDate;
+      publishedTime.innerText = "Published on the " + formattedDate;
 
       let readFullArticleBtn = document.createElement("a");
       readFullArticleBtn.href = element["url"];
-      readFullArticleBtn.innerHTML = "Read full article "+'<i class="bi bi-box-arrow-up-right"></i>';
+      readFullArticleBtn.innerHTML = "Read full article " + '<i class="bi bi-box-arrow-up-right"></i>';
       readFullArticleBtn.target = "blank:";
       readFullArticleBtn.classList.add("mt-auto");
       readFullArticleBtn.classList.add("d-flex");
@@ -108,18 +132,12 @@ class Ctrl {
       $(cardBody).append(readFullArticleBtn);
     });
   }
-  displayError(messsage) {
-    let html = `<div class="alert bg-danger d-flex justify-content-between align-items-center" role="alert">
-                <p class="m-1">${messsage}</p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>`;
-    $("#popUp").html(html);
-    $("#popUp").removeClass("d-none");
-    $("#popUp").addClass("d-flex");
+  displayError(message) {
+    $("#error-message").text(message);
+    $("#error-container").hide().removeClass("d-none").fadeIn(300);
     setTimeout(() => {
-      $("#popUp").fadeOut(function () {
-        $("#popUp").addClass("d-none");
-        $("#popUp").html("");
+      $("#error-container").fadeOut(300, () => {
+        $("#error-container").addClass("d-none");
       });
     }, 5000);
   }
