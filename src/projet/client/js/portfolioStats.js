@@ -77,17 +77,17 @@ class PortfolioStats {
             this.stats.stats.totalPlPercentage = -1 * (100 - this.stats.stats.totalValue * 100 / this.stats.stats.totalInvested);
             this.refreshGui(position);
             $("#pfValue").text("$ " + this.formatNumber(this.stats.stats.totalValue));
-            $("#todaysPLPercentage").html(`<i class="bi ${(this.stats.stats.plTodayPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.plTodayPercentage) + "% today");
+            $("#todaysPLPercentage").html(`<i class="bi ${(this.stats.stats.plTodayPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.plTodayPercentage) + "% ajourd'hui");
             $("#todaysPLPercentage").addClass(((this.stats.stats.plTodayPercentage >= 0) ? this.textGreen : this.textRed));
             $("#todayPLMoney").text("$ " + this.formatNumber(this.stats.stats.plTodayMoney));
             $("#todayPLMoney").addClass(((this.stats.stats.plTodayMoney >= 0) ? this.textGreen : this.textRed));
-            $("#nbrProfitPositions").text(this.stats.stats.amountOfProfitFirms + " in profit");
+            $("#nbrProfitPositions").text(this.stats.stats.amountOfProfitFirms + " positions dans le vert");
             $("#totalPLMoney").text("$ " + this.formatNumber(this.stats.stats.totalPlMoney));
             $("#totalPLMoney").removeClass(this.textGreen + " " + this.textRed).addClass(((this.stats.stats.totalPlMoney >= 0) ? this.textGreen : this.textRed));
-            $("#totalPlPercentage").html(`<i class="bi ${(this.stats.stats.totalPlPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.totalPlPercentage) + "% overall");
+            $("#totalPlPercentage").html(`<i class="bi ${(this.stats.stats.totalPlPercentage >= 0) ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>` + this.formatNumber(this.stats.stats.totalPlPercentage) + "% total");
             $("#totalPlPercentage").removeClass(this.textGreen + " " + this.textRed).addClass(((this.stats.stats.totalPlPercentage >= 0) ? this.textGreen : this.textRed));
             $("#totalInvested").text("$ " + this.formatNumber(this.stats.stats.totalInvested));
-            $("#biggestPerf").text(this.stats.stats.biggestWinnerName + " " + this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) + "%");
+            $("#biggestPerf").text("Sur la lune " + this.stats.stats.biggestWinnerName + " " + this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) + "%");
             console.log(typeof this.stats.stats.totalPlMoney, this.stats.stats.totalPlMoney);
         }
 
@@ -107,13 +107,13 @@ class PortfolioStats {
         trMarketValue.textContent = "$ " + this.formatNumber(position.marketValue);
         let trDailyPl = document.createElement("td");
         trDailyPl.textContent = this.formatNumber(position.dailyPl) + " %";
-        trDailyPl.classList.add((position.dailyPl >= 0) ? "text-success" : "text-danger");
+        trDailyPl.classList.add((position.dailyPl >= 0) ? this.textGreen : this.textRed);
         let trTotalPl = document.createElement("td");
         trTotalPl.textContent = this.formatNumber(position.totalPl) + " %";
-        trTotalPl.classList.add((position.totalPl >= 0) ? "text-success" : "text-danger");
+        trTotalPl.classList.add((position.totalPl >= 0) ? this.textGreen : this.textRed);
         let trClosePosition = document.createElement("td");
         let closePositionButton = document.createElement("button");
-        closePositionButton.textContent = "Close position";
+        closePositionButton.textContent = "Vendre";
         closePositionButton.id = position.symbol;
         closePositionButton.classList.add("btn");
         closePositionButton.classList.add("btn-rolex");
