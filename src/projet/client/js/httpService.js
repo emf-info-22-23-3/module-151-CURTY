@@ -27,9 +27,9 @@ class HttpService {
     let body = { "action": "disconnect" };
     $.ajax({
       type: "POST",
-      dataType: "JSON",
       url: this.endpoint,
       data: JSON.stringify(body),
+      dataType: "JSON",
       success: successCallback
     });
   }
@@ -96,6 +96,7 @@ class HttpService {
       success: successCallback
     });
   }
+
   buyStock(symbol, avgBuyPrice, boughtQuantity, successCallback) {
     let body = {
       "action": "addStock",

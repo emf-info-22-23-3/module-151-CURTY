@@ -5,14 +5,22 @@ class Portfolio {
     constructor() {
         this.httpServ = new HttpService();
         this.httpServ.setErrorHandling((message) => this.displayError(message));
+        this.checkUserState();
         this.portfolioStats = new PortfolioStats(this.httpServ);
         this.getPositions();
         this.setListener();
     }
+    checkUserState(){
+        this.httpServ.getUserState((state)=>{
+            if(!state){
+                window.location.href = "../client/login.html";
+            }
+        });
+    }
     setListener() {
         $("#logOut").click((e) => {
             e.preventDefault();
-            this.httpServ.logOut(() => { window.location.href = "../client/login.html" });
+            this.httpServ.logOut(() => { window.location.href = "../client/login.html"});
         });
         $("#buyBtn").click((e) => {
             let symbol = $("#symbol").val();

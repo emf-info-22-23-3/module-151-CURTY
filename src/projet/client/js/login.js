@@ -43,7 +43,6 @@ class Login {
       if(document.getElementById("form").checkValidity()){
         this.httpServ.authenticateUser(() => {
           window.location.href = "../client/portfolio.html";
-          console.log("ok")
         }, email, password);
       }
     } else {
