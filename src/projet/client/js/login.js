@@ -1,13 +1,24 @@
 $(document).ready(function () {
   window.loginCtrl = new Login();
 });
+/**
+ * Classe gérant la logique de connexion et d'inscription de l'utilisateur.
+ */
 class Login {
+  /**
+   * Constructeur de la classe Login.
+   */
   constructor() {
     this.httpServ = new HttpService();
     this.httpServ.setErrorHandling((message) => this.displayError(message));
     this.setListeners();
     this.isLogin = true;
   }
+  /**
+   * Configure les écouteurs d'événements pour les interactions de l'utilisateur.
+   * - Lors de la soumission du formulaire : envoie la requête de connexion ou d'inscription.
+   * - Change l'état actuelle du formulaire (connexion/inscription).
+   */
   setListeners() {
     $("#btnSubmit").click((e) => {
       e.preventDefault();
@@ -36,14 +47,23 @@ class Login {
       }
     });
   }
+  /**
+   * Gère la requête de connexion ou d'inscription de l'utilisateur en fonction de l'état de `isLogin`.
+   * Si l'utilisateur est en mode "connexion", il tente de se connecter avec les informations fournies.
+   * Si l'utilisateur est en mode "inscription", il tente de créer un compte avec les informations fournies.
+   */
   handleUserConnexionRequest() {
     let email = $("#email").val();
     let password = $("#password").val();
     if (this.isLogin) {
-      if(document.getElementById("form").checkValidity()){
-        this.httpServ.authenticateUser(() => {
-          window.location.href = "../client/portfolio.html";
-        }, email, password);
+      if (document.getElementById("form").checkValidity()) {
+        this.httpServ.authenticateUser(
+          () => {
+            window.location.href = "../client/portfolio.html";
+          },
+          email,
+          password
+        );
       }
     } else {
       let name = $("#name").val();
@@ -59,6 +79,11 @@ class Login {
       }
     }
   }
+  /**
+   * Affiche un message d'erreur à l'utilisateur.
+   *
+   * @param {string} message - Le message d'erreur à afficher.
+   */
   displayError(message) {
     $("#error-message").text(message);
     $("#error-container").hide().removeClass("d-none").fadeIn(300);

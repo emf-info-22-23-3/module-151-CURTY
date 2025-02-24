@@ -1,13 +1,17 @@
 <?php
 include_once('configConnexion.php');
 /**
- * Classe connexion
+ * Classe WorkerDb
  *
- * Cette classes va gérer les envoies de requêtes a la base de données
+ * Cette classe gère les connexions à la base de données et l'exécution des requêtes SQL.
+ * Elle suit le modèle Singleton pour garantir qu'il n'y ait qu'une seule instance de la connexion.
+ * Elle inclut des méthodes pour exécuter des requêtes SELECT, INSERT, UPDATE, DELETE.
  *
  * @version 1.0
  * @author Curty Esteban
  * @project BaoBull
+ * 
+ * @uses configConnexion
  */
 
 class WorkerDb
@@ -21,7 +25,7 @@ class WorkerDb
      * Méthode qui crée l'unique instance de la classe
      * si elle n'existe pas encore puis la retourne.
      *
-     * @return Singleton de la connexion
+     * @return WorkerDb L'instance de la connexion à la base de données
      */
     public static function getInstance()
     {
@@ -32,7 +36,8 @@ class WorkerDb
     }
 
     /**
-     * Fonction permettant d'ouvrir une connexion à la base de données.
+     * Constructeur privé pour ouvrir une connexion à la base de données.
+     * Utilise les constantes définies dans configConnexion.php pour établir la connexion.
      */
     private function __construct()
     {
@@ -49,7 +54,7 @@ class WorkerDb
     }
 
     /**
-     * Fonction permettant de fermer la connexion à la base de données.
+     * Destructeur qui ferme la connexion à la base de données lorsque l'objet WorkerDb est détruit.
      */
     public function __destruct()
     {
@@ -57,11 +62,11 @@ class WorkerDb
     }
 
     /**
-     * Fonction permettant d'exécuter un select dans MySQL.
-     * 
-     * @param String $query. Requête à exécuter.
-     * @param Array $params. Contient les paramètres à ajouter à la requête (null si aucun paramètre n'est requis)
-     * @return toutes les lignes du select
+     * Exécute une requête SELECT dans la base de données et retourne toutes les lignes du résultat.
+     *
+     * @param string $query La requête SQL à exécuter
+     * @param array $params Les paramètres à lier à la requête (null si aucun paramètre n'est requis)
+     * @return array|ErrorAnswer Un tableau contenant toutes les lignes du résultat ou une erreur si une exception est levée
      */
     public function selectQuery($query, $params)
     {
@@ -75,11 +80,11 @@ class WorkerDb
     }
 
     /**
-     * Fonction permettant d'exécuter un select dans MySQL.
-     * 
-     * @param String $query. Requête à exécuter.
-     * @param Array $params. Contient les paramètres à ajouter à la requête (null si aucun paramètre n'est requis)
-     * @return la première ligne du select
+     * Exécute une requête SELECT dans la base de données et retourne la première ligne du résultat.
+     *
+     * @param string $query La requête SQL à exécuter
+     * @param array $params Les paramètres à lier à la requête (null si aucun paramètre n'est requis)
+     * @return array|ErrorAnswer Un tableau contenant la première ligne du résultat ou une erreur si une exception est levée
      */
     public function selectQuerySingleResult($query, $params)
     {
@@ -91,13 +96,13 @@ class WorkerDb
             return $this->dbError;
         }
     }
+
     /**
-     * Fonction permettant d'exécuter une requête MySQL.
-     * A utiliser pour les UPDATE, DELETE, INSERT.
+     * Exécute une requête SQL (UPDATE, DELETE, INSERT) dans la base de données.
      *
-     * @param String $query. Requête à exécuter.
-     * @param Array $params. Contient les paramètres à ajouter à la requête  (null si aucun paramètre n'est requis)
-     * @return le nombre de lignes affectées
+     * @param string $query La requête SQL à exécuter
+     * @param array $params Les paramètres à lier à la requête (null si aucun paramètre n'est requis)
+     * @return bool|ErrorAnswer Retourne true si la requête a été exécutée avec succès, sinon une erreur
      */
     public function executeQuery($query, $params)
     {
@@ -110,10 +115,10 @@ class WorkerDb
         }
     }
     /**
-     * Fonction permettant d'obtenir le dernier id inséré.
-     * 
-     * @param String $table. la table où a été inséré l'objet. 
-     * @return int: l'id du dernier élément inséré.
+     * Récupère le dernier ID inséré dans la base de données.
+     *
+     * @param string $table Le nom de la table où l'insertion a eu lieu
+     * @return int|ErrorAnswer Retourne l'ID du dernier élément inséré ou une erreur si une exception est levée
      */
     public function getLastId($table)
     {

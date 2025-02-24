@@ -1,15 +1,29 @@
 <?php
+
+/**
+ * Classe PortfolioCtrl
+ *
+ * Cette classe permet de gérer les actions liées au portfolio d'un utilisateur, telles que l'ajout et la vente de positions.
+ * @version 1.0
+ * @author Curty Esteban
+ * @project BaoBull
+ */
 class PortfolioCtrl
 {
     private $workerPortfolio;
-
+    /**
+     * Constructeur de la classe.
+     * Initialise l'objet WorkerPortfolio pour gérer les actions sur les portfolios.
+     */
     public function __construct()
     {
         $this->workerPortfolio = new WorkerPortfolio();
     }
 
     /**
-     * Méthode permettant de récuperer les positions d'un utilisateur
+     * Méthode permettant de récupérer les positions d'un utilisateur.
+     *
+     * @return Array|ErrorAnswer Les positions de l'utilisateur
      */
     public function getUserPositions()
     {
@@ -17,13 +31,13 @@ class PortfolioCtrl
     }
 
     /**
-     * Méthode permettant d'ajouter un stock dans un portfolio.
+     * Méthode permettant d'ajouter une position dans le portfolio de l'utilisateur.
+     *
+     * @param float $avgBuyPrice Prix d'achat moyen
+     * @param float $boughtQuantity Quantité de stocks achetés
+     * @param string $stockName Nom du stock
      * 
-     * @param avgBuyPrice le prix d'achat moyen
-     * @param boughtQuantity la quantité de stock
-     * @param stockName le nom du stock acheté
-     * 
-     * @return Array les positions de l'utilisateur mise à jours ou une erreur
+     * @return array|ErrorAnswer Les positions de l'utilisateur mises à jour ou une erreur
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
@@ -37,13 +51,13 @@ class PortfolioCtrl
     }
 
     /**
-     * Méthode permettant de réduire la taille d'une position.
+     * Méthode permettant de réduire la taille d'une position dans le portfolio.
+     *
+     * @param float $avgSellPrice Prix de vente moyen
+     * @param float $soldQuantity Quantité de stocks vendus
+     * @param string $stockName Nom du stock vendu
      * 
-     * @param stockName le nom du stock
-     * @param soldQuantity la quantité vendue
-     * @param avgSellPrice le prix de vente moyen
-     * 
-     * @return Array les positions de l'utilisateur mise à jours ou une erreur
+     * @return array|ErrorAnswer Les positions de l'utilisateur mises à jour ou une erreur
      */
     public function sellStock($avgSellPrice, $soldQuantity, $stockName)
     {
@@ -55,23 +69,25 @@ class PortfolioCtrl
         }
         return $toReturn;
     }
+
     /**
-     * Méthode permettant de récuperer le portfolio assoscié à un utilisateur et s'il n'en a pas on va le lui créer automatiquement
+     * Méthode permettant de récupérer la pk du portfolio associé à un utilisateur.
+     *
+     * @param int $pkUser La clé primaire de l'utilisateur
      * 
-     * @param pkUser la pk de l'utilisateur a qui il faut trouver le portfolio
-     * 
-     * @return int la pk du portfolio de l'utilisateur
-     * 
+     * @return int|ErrorAnswer La clé primaire du portfolio de l'utilisateur ou une erreur
      */
     public function getUserPkPortfolio($pkUser)
     {
         return $this->workerPortfolio->getUserPkPortfolio($pkUser);
     }
+
     /**
-     * Méthode permettant de vérifier qu'un champ soit bien un nombre positif
+     * Méthode permettant de vérifier qu'un champ soit bien un nombre positif.
      *
-     * @param $field le champ a vérifier
-     * @return boolean si le champ est un numéro valide ou non
+     * @param mixed $field Le champ à vérifier
+     * 
+     * @return bool Si le champ est un nombre valide ou non
      */
     private function isValidNumber($field)
     {
@@ -82,10 +98,11 @@ class PortfolioCtrl
         return $isValid;
     }
     /**
-     * Méthode permettant de vérifier qu'un champ est belle est bien un string et qu'il ne soit pas vide.
+     * Méthode permettant de vérifier qu'un champ est un string valide (non vide).
+     *
+     * @param string $str Le champ à vérifier
      * 
-     * @param $str Le champ a vérifier
-     * @return boolean si le champ est un string valide ou non
+     * @return bool Si le champ est un string valide ou non
      */
     private function isValidString($str)
     {

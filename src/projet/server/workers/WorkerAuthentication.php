@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * Classe WorkerAuthentication
+ *
+ * Cette classe gère l'authentification des utilisateurs et leur l'inscription.
+ * @version 1.0
+ * @author Curty Esteban
+ * @project BaoBull
+ */
 class WorkerAuthentication
 {
     private $userDenied;
@@ -6,7 +15,8 @@ class WorkerAuthentication
 
 
     /**
-     * Méthode qui va initialiser les attributs de la classe
+     * Constructeur de la classe WorkerAuthentication.
+     * Initialise l'objet d'erreur pour les tentatives de connexion échouées et la connexion à la base de données.
      */
     public function __construct()
     {
@@ -15,11 +25,11 @@ class WorkerAuthentication
     }
 
     /**
-     * Fonction permettant d'authentifier un utilisateur
-     * @param email L'addresse email de l'utilisateur
-     * @param password Password de l'utilisateur
-     * 
-     * @return un objet User avec ces informations ou une erreur si l'authentification a échouée
+     * Authentifie un utilisateur en vérifiant l'email et le mot de passe.
+     *
+     * @param string $email L'adresse email de l'utilisateur.
+     * @param string $password Le mot de passe de l'utilisateur.
+     * @return User|ErrorAnswer Un objet User si l'authentification réussit, ou une ErrorAnswer si l'authentification échoue.
      */
     public function authenticateUser($email, $password)
     {
@@ -36,10 +46,13 @@ class WorkerAuthentication
         return $final;
     }
     /**
-     * Méthode permettant de vérifier si un email existe déja dans la DB ou non.
+     * Vérifie si un email est déjà utilisé par un autre utilisateur dans la base de données.
+     *
+     * @param string $email L'adresse email à vérifier.
+     * @return bool|ErrorAnswer Retourne TRUE si l'email existe, FALSE sinon, ou une ErrorAnswer en cas d'erreur.
      */
     private function emailAlreadyExists($email)
-    {   
+    {
         $query = "SELECT pk_user FROM t_user WHERE email = :email";
         $params = array('email' => $email);
         $pkuser = $this->db->selectQuerySingleResult($query, $params);
@@ -52,14 +65,14 @@ class WorkerAuthentication
         return $exists;
     }
     /**
-     * Méthode permettant de créer une nouveau compte utilisateur dans la DB
-     * 
-     * @param $name le nom de l'utilisateur
-     * @param $familyName le nom de famille de l'utilisateur
-     * @param $email l'adresse email de l'utilisateur
-     * @param $password le mot de passe de l'utilisateur
-     * 
-     * @return User un objet de type user avec les inforamtions sur celui-ci
+     * Crée un nouveau compte utilisateur dans la base de données.
+     *
+     * @param string $name Le prénom de l'utilisateur.
+     * @param string $familyName Le nom de famille de l'utilisateur.
+     * @param string $email L'adresse email de l'utilisateur.
+     * @param string $password Le mot de passe de l'utilisateur.
+     * @return User|ErrorAnswer Un objet User avec les informations de l'utilisateur si l'inscription réussit, 
+     *                           ou une ErrorAnswer si une erreur survient.
      */
     public function register($name, $familyName, $email, $password)
     {

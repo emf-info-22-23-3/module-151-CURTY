@@ -1,18 +1,24 @@
 <?php
-
 /**
  * Script server.php
  * 
- * Script qui sert de endpoint pour les clients. Il va s'occuper de vérifer les paramètres reçus, 
- * retransmettre la requête au bon worker et finalement renvoyer la réponse au client sous forme de JSON 
+ * Ce script sert de point d'entrée pour les clients. Il gère les requêtes HTTP en fonction de la méthode utilisée, 
+ * vérifie les paramètres reçus, interagit avec les contrôleurs pour traiter les actions demandées 
+ * (authentification, enregistrement, gestion du portfolio), et renvoie des réponses au format JSON.
+ * 
  * @version 1.0
  * @author Curty Esteban
  * @project BaoBull
+ * 
+ * @uses ErrorAnswer
+ * @uses httpReturns
+ * @uses WorkerDb
+ * @uses User
+ * @uses WorkerAuthentication
+ * @uses WorkerPortfolio
+ * @uses PortfolioCtrl
+ * @uses UserCtrl
  */
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, PUT");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Credentials: true");
 include_once('beans/ErrorAnswer.php');
 include_once('beans/httpReturns.php');
 include_once('workers/db/WorkerDb.php');

@@ -1,8 +1,15 @@
 $(document).ready(function () {
   window.ctrl = new Ctrl();
-  ctrl.loadIndex();
+  ctrl.loadPage();
 });
+/**
+ * Contrôleur principal de la page d'accueil.
+ */
 class Ctrl {
+
+  /**
+   * Constructeur de la classe Ctrl.
+   */
   constructor() {
     this.marketOptionClass = ".marketOption";
     this.marketOptionClickedClass = "marketOptionSelected";
@@ -10,7 +17,10 @@ class Ctrl {
     this.httpServ.setErrorHandling((message) => this.displayError(message));
     this.userAuthenticated = false;
   }
-  loadIndex() {
+   /**
+   * Charge  de la page d'accueil, configure les écouteurs d'événements et affiche les graphiques et les nouvelles.
+   */
+  loadPage() {
     //Hide every chart
     $(".tradingViewChart").css("display", "none");
     //Listener for the market option button
@@ -43,6 +53,11 @@ class Ctrl {
     this.getLatestNews();
     this.httpServ.getUserState((state) => this.setUserMenu(state));
   }
+  /**
+   * Met à jour le menu de l'utilisateur en fonction de son état d'authentification.
+   * Affiche "Connexion" ou "Déconnexion" dans le menu et ajoute un lien vers le portfolio si l'utilisateur est authentifié.
+   * @param {boolean} userState - L'état d'authentification de l'utilisateur (vrai ou faux).
+   */
   setUserMenu(userState) {
     this.userAuthenticated = userState;
     let element = document.createElement("a");
@@ -73,12 +88,19 @@ class Ctrl {
       }
     });
   }
+  /**
+   * Récupère les dernières nouvelles via le service HTTP demande leurs affichage.
+   */
   getLatestNews() {
     let latestNews = this.httpServ.getLatestNews((news) =>
       this.displayLatestNews(news)
     );
     console.log(latestNews);
   }
+  /**
+   * Affiche les dernières nouvelles dans des cartes formatées.
+   * @param {Array} news - Liste des nouvelles à afficher.
+   */
   displayLatestNews(news) {
     news.forEach((element) => {
       let card = document.createElement("div");
@@ -140,6 +162,11 @@ class Ctrl {
       $(cardBody).append(readFullArticleBtn);
     });
   }
+  /**
+   * Affiche un message d'erreur à l'utilisateur.
+   * 
+   * @param {string} message - Le message d'erreur à afficher.
+   */
   displayError(message) {
     $("#error-message").text(message);
     $("#error-container").hide().removeClass("d-none").fadeIn(300);

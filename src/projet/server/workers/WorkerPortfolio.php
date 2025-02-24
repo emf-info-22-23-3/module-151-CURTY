@@ -1,10 +1,21 @@
 <?php
+
+/**
+ * Classe WorkerPortfolio
+ *
+ * Cette classe est responsable de la gestion du portfolio des utilisateurs. Elle inclut des méthodes
+ * pour récupérer, créer et mettre à jour les portfolios et positions des utilisateurs, ainsi que pour vérifier
+ * et ajouter des actions dans un portfolio.
+ * @version 1.0
+ * @author Curty Esteban
+ * @project BaoBull
+ */
 class WorkerPortfolio
 {
     private $db;
 
     /**
-     * Fonction qui va initialiser tous les attributs de la classe
+     * Constructeur qui initialise l'instance de la base de données.
      */
     public function __construct()
     {
@@ -12,12 +23,10 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de récuperer le portfolio assoscié à un utilisateur et s'il n'en a pas on va le lui créer automatiquement
-     * 
-     * @param pkUser la pk de l'utilisateur a qui il faut trouver le portfolio
-     * 
-     * @return int la pk du portfolio de l'utilisateur
-     * 
+     * Récupère l'ID du portfolio associé à un utilisateur ou le crée si nécessaire.
+     *
+     * @param int $pkUser La clé primaire de l'utilisateur.
+     * @return int|ErrorAnswer La pk du portfolio de l'utilisateur ou un erreur
      */
     public function getUserPkPortfolio($pkUser)
     {
@@ -33,11 +42,10 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de créer un nouveau portfolio a l'utilisateur dans la DB
-     * 
-     * @param pkUser l'utilisateur a qui il faut créer le portfolio
-     * 
-     * @return int la pk du portfolio
+     * Crée un nouveau portfolio pour un utilisateur dans la base de données.
+     *
+     * @param int $pkUser La clé primaire de l'utilisateur.
+     * @return int|ErrorAnswer La pk du portfolio nouvellement créé ou une erreur.
      */
     public function createUserPortfolio($pkUser)
     {
@@ -51,11 +59,9 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de récuperer les positions d'un utilisateur
-     * 
-     * @param pkUser l'utilisateur concerné
-     * 
-     * @return Array Les positions
+     * Récupère les positions (actions) d'un utilisateur dans son portfolio.
+     *
+     * @return array|ErrorAnswer La liste des positions (actions) dans le portfolio de l'utilisateur ou une erreur.
      */
     public function getUserPositions()
     {
@@ -63,7 +69,7 @@ class WorkerPortfolio
         $user = $_SESSION['user'];
         $pkPortfolio = $user->getPkPortfolio();
         if ($pkPortfolio == -1) {
-            $positions = new ErrorAnswer("The server was not able to retreive you portfolio. Please try to log back in in a moment", 500);
+            $positions = new ErrorAnswer("The server was not able to retrieve you portfolio. Please try to log back in in a moment", 500);
         } else {
             $query = "SELECT avgBuyPrice, boughtQuantity, soldQuantity, avgSoldPrice, name FROM tr_portfolio_stock INNER JOIN t_stock ON fk_stock = pk_stock WHERE fk_portfolio = :fkPortfolio";
             $params = array('fkPortfolio' => $pkPortfolio);
@@ -73,11 +79,10 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de récuperer une position spécifique de l'utilisateur
-     * 
-     * @param stockName le nom de la position a récuperer
-     * 
-     * @return Array la position
+     * Récupère une position spécifique (action) de l'utilisateur dans son portfolio.
+     *
+     * @param string $stockName Le nom de l'action.
+     * @return array|ErrorAnswer Les détails de la position pour l'action spécifiée ou une erreur.
      */
     public function getSpecificUserPosition($stockName)
     {
@@ -94,11 +99,10 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de vérifier si l'action est déja enregistrée dans la DB et si ce n'est pas le cas, on va la créer à condition que le ticker existe
-     * PS: Méthode 100% fonctionel sans time out depuis la maison
-     * @param ticker le symbol représentant l'action
+     * Vérifie si l'action existe dans la base de données, et si ce n'est pas le cas, l'ajoute.
      * 
-     * @return int la pk du stock ou une ErrorAnswer en cas de ticker invalide ou d'erreur avev la DB
+     * @param string $ticker Le symbole de l'action.
+     * @return int|ErrorAnswer La clé primaire de l'action, ou une erreur si l'action est invalide ou en cas d'erreur de base de données.
      */
     public function verifyAsset($ticker)
     {
@@ -131,19 +135,17 @@ class WorkerPortfolio
             }
             return $pkStock;
         } catch (Exception $e) {
-            http_response_code(500);
             return new ErrorAnswer("Error while trying to fetch the ticker from finnhub. Ex:" . $e, 500);
         }
     }
 
     /**
-     * Méthode permettant d'ajouter un stock dans un portfolio.
-     * 
-     * @param avgBuyPrice le prix d'achat moyen
-     * @param boughtQuantity la quantité de stock
-     * @param stockName le nom du stock acheté
-     * 
-     * @return Array les positions de l'utilisateur mise à jours ou une erreur
+     * Ajoute une nouvelle position (action) dans le portfolio d'un utilisateur.
+     *
+     * @param float $avgBuyPrice Le prix d'achat moyen de l'action.
+     * @param int $boughtQuantity La quantité d'actions achetées.
+     * @param string $stockName Le nom de l'action achetée.
+     * @return array|ErrorAnswer La liste des positions de l'utilisateur mise à jour, ou une erreur en cas de problème.
      */
     public function addPosition($avgBuyPrice, $boughtQuantity, $stockName)
     {
@@ -185,13 +187,12 @@ class WorkerPortfolio
     }
 
     /**
-     * Méthode permettant de réduire la taille d'une position.
-     * 
-     * @param stockName le nom du stock
-     * @param soldQuantity la quantité vendue
-     * @param avgSellPrice le prix de vente moyen
-     * 
-     * @return Array les positions de l'utilisateur mise à jours ou une erreur
+     * Réduit la quantité d'une position d'action dans le portfolio de l'utilisateur.
+     *
+     * @param string $stockName Le nom de l'action.
+     * @param int $soldQuantity La quantité d'actions vendues.
+     * @param float $avgSellPrice Le prix de vente moyen de l'action.
+     * @return array|ErrorAnswer La liste des positions de l'utilisateur mise à jour, ou une erreur en cas de problème.
      */
     public function sellStock($avgSellPrice, $soldQuantity, $stockName)
     {
