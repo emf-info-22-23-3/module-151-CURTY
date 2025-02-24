@@ -10,6 +10,7 @@ class Login {
   }
   setListeners() {
     $("#btnSubmit").click((e) => {
+      e.preventDefault();
       this.handleUserConnexionRequest();
     });
     $("#otherOption").on("click", "#register", (e) => {
@@ -19,13 +20,19 @@ class Login {
         $("#name-cont").removeClass("d-none");
         $("#famName-cont").removeClass("d-none");
         $("#password-conf-cont").removeClass("d-none");
-        $("#otherOption").html(`<p >Vous avez déja un compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">Se connecter</a></p>`);
+        $("#btnSubmit").text("S'enregistrer");
+        $("#otherOption").html(
+          `<p >Vous avez déja un compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">Se connecter</a></p>`
+        );
       } else {
         this.isLogin = true;
         $("#name-cont").addClass("d-none");
         $("#famName-cont").addClass("d-none");
         $("#password-conf-cont").addClass("d-none");
-        $("#otherOption").html(`<p >Vous n'avez pas de compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">S'inscrire</a></p>`);
+        $("#btnSubmit").text("Se connecter");
+        $("#otherOption").html(
+          `<p >Vous n'avez pas de compte? <a href="#" id="register" class="text-decoration-none text-rolex fw-medium">S'inscrire</a></p>`
+        );
       }
     });
   }
@@ -33,21 +40,25 @@ class Login {
     let email = $("#email").val();
     let password = $("#password").val();
     if (this.isLogin) {
-      this.httpServ.authenticateUser(() => {
-        window.location.href = "../client/portfolio.html";
-      }, email, password);
+      if(document.getElementById("form").checkValidity()){
+        this.httpServ.authenticateUser(() => {
+          window.location.href = "../client/portfolio.html";
+          console.log("ok")
+        }, email, password);
+      }
     } else {
       let name = $("#name").val();
       let familyName = $("#familyName").val();
       let email = $("#email").val();
       let passwordConfirmation = $("#password-confirmation").val();
       if (passwordConfirmation === password) {
-        this.httpServ.createAccount(name, familyName, email, password, () => { window.location.href = "../client/portfolio.html"; });
+        this.httpServ.createAccount(name, familyName, email, password, () => {
+          window.location.href = "../client/portfolio.html";
+        });
       } else {
         this.displayError("Les mots de passe ne correspondent pas");
       }
     }
-
   }
   displayError(message) {
     $("#error-message").text(message);

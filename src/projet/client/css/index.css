@@ -28,3 +28,6 @@
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
 }
+.text-rolex {
+    color: var(--rolex-green) !important;
+  }

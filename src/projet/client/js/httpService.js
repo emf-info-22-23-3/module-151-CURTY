@@ -8,15 +8,21 @@ class HttpService {
   }
 
   authenticateUser(successCallback, email, password) {
-    let body = { "action": "login", "email": email, "password": password };
+    let body = { 
+      "action": "login", 
+      "email": email, 
+      "password": password 
+    };
     $.ajax({
       type: "POST",
-      dataType: "JSON",
       url: this.endpoint,
       data: JSON.stringify(body),
+      dataType: "JSON",
+      contentType: "application/json",
       success: successCallback
     });
   }
+
   logOut(successCallback) {
     let body = { "action": "disconnect" };
     $.ajax({

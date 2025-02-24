@@ -11,6 +11,7 @@ class Portfolio {
     }
     setListener() {
         $("#logOut").click((e) => {
+            e.preventDefault();
             this.httpServ.logOut(() => { window.location.href = "../client/login.html" });
         });
         $("#buyBtn").click((e) => {

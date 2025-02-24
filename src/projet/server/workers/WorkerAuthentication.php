@@ -39,15 +39,15 @@ class WorkerAuthentication
      * Méthode permettant de vérifier si un email existe déja dans la DB ou non.
      */
     private function emailAlreadyExists($email)
-    {
+    {   
         $query = "SELECT pk_user FROM t_user WHERE email = :email";
         $params = array('email' => $email);
         $pkuser = $this->db->selectQuerySingleResult($query, $params);
-        $exists = false;
+        $exists = FALSE;
         if ($pkuser instanceof ErrorAnswer) {
             $exists = $pkuser;
         } else if ($pkuser) {
-            $exists = true;
+            $exists = TRUE;
         }
         return $exists;
     }
@@ -64,11 +64,10 @@ class WorkerAuthentication
     public function register($name, $familyName, $email, $password)
     {
         $toReturn = NULL;
-
         $emailExists = $this->emailAlreadyExists($email);
         if ($emailExists instanceof ErrorAnswer) {
-            $toReturn = $email;
-        } else if ($email) {
+            $toReturn = $emailExists;
+        } else if ($email == 1) {
             $toReturn = new ErrorAnswer("The provided email is already linked with another account.", 409);
         } else {
             $query = "INSERT INTO t_user (name, familyName, email, password)VALUES (:name, :famName, :email, :password)";
