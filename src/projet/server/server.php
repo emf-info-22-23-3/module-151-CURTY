@@ -20,7 +20,7 @@
  * @uses UserCtrl
  */
 include_once('beans/ErrorAnswer.php');
-include_once('beans/httpReturns.php');
+include_once('beans/HttpReturns.php');
 include_once('workers/db/WorkerDb.php');
 include_once('beans/User.php');
 include_once('workers/WorkerAuthentication.php');
