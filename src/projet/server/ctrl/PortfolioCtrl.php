@@ -45,7 +45,7 @@ class PortfolioCtrl
         if ($this->isValidNumber($avgBuyPrice) and $this->isValidNumber($boughtQuantity) and $this->isValidString($stockName)) {
             $toReturn = $this->workerPortfolio->addPosition($avgBuyPrice, $boughtQuantity, $stockName);
         } else {
-            $toReturn = BAD_REQUEST;
+            $toReturn = HttpReturns::BAD_REQUEST();
         }
         return $toReturn;
     }
@@ -65,7 +65,7 @@ class PortfolioCtrl
         if ($this->isValidNumber($avgSellPrice) and $this->isValidNumber($soldQuantity) and $this->isValidString($stockName)) {
             $toReturn = $this->workerPortfolio->sellStock($avgSellPrice, $soldQuantity, $stockName);
         } else {
-            $toReturn = BAD_REQUEST;
+            $toReturn = HttpReturns::BAD_REQUEST();
         }
         return $toReturn;
     }

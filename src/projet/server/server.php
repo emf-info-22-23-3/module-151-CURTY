@@ -49,13 +49,14 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 } else {
                     $user->setFkPortfolio($portfolioPk);
                     $_SESSION['user'] = $user;
-                    http_response_code(HTTP_SUCCESS);
+
+                    http_response_code(HttpReturns::HttpSuccess());
                     echo json_encode($user);
                 }
             }
         } else {
-            http_response_code(BAD_REQUEST->getStatus());
-            echo json_encode(BAD_REQUEST);
+            http_response_code(HttpReturns::BAD_REQUEST()->getStatus());
+            echo json_encode(HttpReturns::BAD_REQUEST());
         }
     } else if ($_SERVER['REQUEST_METHOD'] == 'POST' and $userCtrl->areParamsSet(array('action'), $receivedParams) and $receivedParams['action'] == 'register') {
         if ($userCtrl->areParamsSet(array('name', 'familyName', 'email', 'password'), $receivedParams)) {
@@ -73,7 +74,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 } else {
                     $user->setFkPortfolio($portfolioPk);
                     $_SESSION['user'] = $user;
-                    http_response_code(HTTP_SUCCESS);
+                    http_response_code(HttpReturns::HttpSuccess());
                     echo json_encode($user);
                 }
             }
@@ -95,13 +96,13 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                             http_response_code($positions->getStatus());
                             echo json_encode($positions);
                         } else {
-                            http_response_code(HTTP_SUCCESS);
+                            http_response_code(HttpReturns::HttpSuccess());
                             echo json_encode($positions);
                         }
                     }
                 } else {
-                    http_response_code(BAD_REQUEST->getStatus());
-                    echo json_encode(BAD_REQUEST);
+                    http_response_code(HttpReturns::BAD_REQUEST()->getStatus());
+                    echo json_encode(HttpReturns::BAD_REQUEST());
                 }
                 break;
             case 'POST':
@@ -111,7 +112,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                     if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);
                         session_destroy();
-                        http_response_code(HTTP_SUCCESS);
+                        http_response_code(HttpReturns::HttpSuccess());
                     } else if ($receivedParams['action'] == "addStock") {
                         if ($userCtrl->areParamsSet(array('avgBuyPrice', 'boughtQuantity', 'asset'), $receivedParams)) {
                             $newPositions = $portfolioCtrl->addPosition($receivedParams['avgBuyPrice'], $receivedParams['boughtQuantity'], $receivedParams['asset']);
@@ -119,12 +120,12 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                                 http_response_code($newPositions->getStatus());
                                 echo json_encode($newPositions);
                             } else {
-                                http_response_code(HTTP_SUCCESS);
+                                http_response_code(HttpReturns::HttpSuccess());
                                 echo json_encode($newPositions);
                             }
                         } else {
-                            http_response_code(BAD_REQUEST->getStatus());
-                            echo json_encode(BAD_REQUEST);
+                            http_response_code(HttpReturns::BAD_REQUEST()->getStatus());
+                            echo json_encode(HttpReturns::BAD_REQUEST());
                         }
                     } else if ($receivedParams['action'] == "sellStock") {
                         if ($userCtrl->areParamsSet(array('avgSellPrice', 'soldQuantity', 'asset'), $receivedParams)) {
@@ -133,17 +134,17 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                                 http_response_code($result->getStatus());
                                 echo json_encode($result);
                             } else {
-                                http_response_code(HTTP_SUCCESS);
+                                http_response_code(HttpReturns::HttpSuccess());
                                 echo json_encode($result);
                             }
                         } else {
-                            http_response_code(BAD_REQUEST->getStatus());
-                            echo json_encode(BAD_REQUEST);
+                            http_response_code(HttpReturns::BAD_REQUEST()->getStatus());
+                            echo json_encode(HttpReturns::BAD_REQUEST());
                         }
                     }
                 } else {
-                    http_response_code(BAD_REQUEST->getStatus());
-                    echo json_encode(BAD_REQUEST);
+                    http_response_code(HttpReturns::BAD_REQUEST()->getStatus());
+                    echo json_encode(HttpReturns::BAD_REQUEST());
                 }
                 break;
             case 'PUT':
@@ -152,7 +153,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 break;
         }
     } else { //Utilisateur non autorisé
-        http_response_code(UNAUTHORIZED->getStatus());
-        echo json_encode(UNAUTHORIZED);
+        http_response_code(HttpReturns::UNAUTHORIZED()->getStatus());
+        echo json_encode(HttpReturns::UNAUTHORIZED());
     }
 }

@@ -11,7 +11,7 @@
  */
 //Informations de connexion à la base de données
 define('DB_TYPE', 'mysql');
-define('DB_HOST', 'database');
-define('DB_NAME', 'BaoBull');
-define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_HOST', 'emf-informatique.ch');
+define('DB_NAME', 'curtye_BaoBull');
+define('DB_USER', 'curtye_BaoBullAdmin');
+define('DB_PASS', '9xCc6-m]#^(z');

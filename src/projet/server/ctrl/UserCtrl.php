@@ -36,7 +36,7 @@ class UserCtrl
         if ($this->isValidEmail($email) and $this->isValidString($password)) {
             $toReturn = $this->workerAuthentication->authenticateUser($email, $password);
         } else {
-            $toReturn = BAD_REQUEST;
+            $toReturn = HttpReturns::BAD_REQUEST();
         }
         return $toReturn;
     }
@@ -53,7 +53,11 @@ class UserCtrl
     public function registerUser($name, $familyName, $email, $password)
     {
         $toReturn = NULL;
-        $toReturn = $this->workerAuthentication->register($name, $familyName, $email, $password);
+        if($this->isValidString($name) and $this->isValidString($familyName) and $this->isValidEmail($email) and $this->isValidPassword($password)) {
+            $toReturn = $this->workerAuthentication->register($name, $familyName, $email, $password);
+        }else{
+            $toReturn = HttpReturns::BAD_REQUEST();
+        }
         return $toReturn;
     }
 
