@@ -115,13 +115,13 @@ class WorkerPortfolio
             $data = json_decode($response, true);
             if (isset($data["ticker"])) {
                 //Vérifier si le stock est déja dans la db
-                $query = "select pk_stock from BaoBull.t_stock where name = :ticker";
+                $query = "select pk_stock from t_stock where name = :ticker";
                 $params = array('ticker' => $data["ticker"]);
                 $stock = $this->db->selectQuerySingleResult($query, $params);
                 if ($stock and !($stock instanceof ErrorAnswer)) {
                     $pkStock = $stock['pk_stock'];
                 } else if (!($stock instanceof ErrorAnswer)) {
-                    $query = "INSERT INTO BaoBull.t_stock (name) VALUES (:ticker)";
+                    $query = "INSERT INTO t_stock (name) VALUES (:ticker)";
                     $params = $params = array('ticker' => $data["ticker"]);
                     $affectedRows = $this->db->executeQuery($query, $params);
                     if (!($affectedRows instanceof ErrorAnswer) and $affectedRows == 1) {
@@ -171,7 +171,7 @@ class WorkerPortfolio
                     $toReturn = $this->db->executeQuery($query, $params);
                 } else {
                     if ($fkStock) {
-                        $query = "INSERT INTO BaoBull.tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
+                        $query = "INSERT INTO tr_portfolio_stock (fk_portfolio, fk_stock, avgBuyPrice, boughtQuantity) VALUES (:fkPortfolio,:fkStock,:avgPrice, :boughtQuantity)";
                         $params = array('fkPortfolio' => $user->getPkPortfolio(), 'fkStock' => $fkStock, 'avgPrice' => $avgBuyPrice, 'boughtQuantity' => $boughtQuantity);
                         $toReturn = $this->db->executeQuery($query, $params);
                     } else {
