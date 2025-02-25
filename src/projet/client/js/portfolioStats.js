@@ -102,7 +102,7 @@ class PortfolioStats {
         -1 *
         (100 -
           (this.stats.stats.totalValue * 100) /
-            this.stats.stats.yesterdayValue);
+          this.stats.stats.yesterdayValue);
       this.stats.stats.totalPlPercentage =
         -1 *
         (100 -
@@ -110,13 +110,12 @@ class PortfolioStats {
       this.refreshGui(position);
       $("#pfValue").text("$ " + this.formatNumber(this.stats.stats.totalValue));
       $("#todaysPLPercentage").html(
-        `<i class="bi ${
-          this.stats.stats.plTodayPercentage >= 0
-            ? "bi-arrow-up"
-            : "bi-arrow-down"
+        `<i class="bi ${this.stats.stats.plTodayPercentage >= 0
+          ? "bi-arrow-up"
+          : "bi-arrow-down"
         }"></i>` +
-          this.formatNumber(this.stats.stats.plTodayPercentage) +
-          "% ajourd'hui"
+        this.formatNumber(this.stats.stats.plTodayPercentage) +
+        "% ajourd'hui"
       );
       $("#todaysPLPercentage").addClass(
         this.stats.stats.plTodayPercentage >= 0 ? this.textGreen : this.textRed
@@ -139,13 +138,12 @@ class PortfolioStats {
           this.stats.stats.totalPlMoney >= 0 ? this.textGreen : this.textRed
         );
       $("#totalPlPercentage").html(
-        `<i class="bi ${
-          this.stats.stats.totalPlPercentage >= 0
-            ? "bi-arrow-up"
-            : "bi-arrow-down"
+        `<i class="bi ${this.stats.stats.totalPlPercentage >= 0
+          ? "bi-arrow-up"
+          : "bi-arrow-down"
         }"></i>` +
-          this.formatNumber(this.stats.stats.totalPlPercentage) +
-          "% total"
+        this.formatNumber(this.stats.stats.totalPlPercentage) +
+        "% total"
       );
       $("#totalPlPercentage")
         .removeClass(this.textGreen + " " + this.textRed)
@@ -159,10 +157,10 @@ class PortfolioStats {
       );
       $("#biggestPerf").text(
         "Sur la lune " +
-          this.stats.stats.biggestWinnerName +
-          " " +
-          this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) +
-          "%"
+        this.stats.stats.biggestWinnerName +
+        " " +
+        this.formatNumber(this.stats.stats.biggestWinnerGainPercentage) +
+        "%"
       );
     }
   }

@@ -46,7 +46,7 @@ class HttpService {
       type: "POST",
       url: this.endpoint,
       data: JSON.stringify(body),
-      contentType:"JSON",
+      contentType: "JSON",
       success: successCallback,
     });
   }

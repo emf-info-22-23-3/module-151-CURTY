@@ -17,9 +17,9 @@ class Ctrl {
     this.httpServ.setErrorHandling((message) => this.displayError(message));
     this.userAuthenticated = false;
   }
-   /**
-   * Charge  de la page d'accueil, configure les écouteurs d'événements et affiche les graphiques et les nouvelles.
-   */
+  /**
+  * Charge  de la page d'accueil, configure les écouteurs d'événements et affiche les graphiques et les nouvelles.
+  */
   loadPage() {
     //Hide every chart
     $(".tradingViewChart").css("display", "none");
