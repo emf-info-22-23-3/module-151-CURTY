@@ -129,6 +129,7 @@ class WorkerPortfolio
                     } else {
                         $pkStock = $affectedRows;
                     }
+                    
                 } else {
                     $pkStock = $stock;
                 }
