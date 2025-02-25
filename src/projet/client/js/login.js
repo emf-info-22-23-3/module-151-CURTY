@@ -53,29 +53,50 @@ class Login {
    * Si l'utilisateur est en mode "inscription", il tente de créer un compte avec les informations fournies.
    */
   handleUserConnexionRequest() {
-    let email = $("#email").val();
-    let password = $("#password").val();
+    let email = $("#email");
+    let password = $("#password");
     if (this.isLogin) {
-      if (document.getElementById("form").checkValidity()) {
+      if (email[0].checkValidity() && password[0].checkValidity()) {
         this.httpServ.authenticateUser(
           () => {
             window.location.href = "../client/portfolio.html";
           },
-          email,
-          password
+          email.val(),
+          password.val()
         );
+      } else {
+        this.displayError("L'email ou le mot de passe ne sont pas valides");
       }
     } else {
-      let name = $("#name").val();
-      let familyName = $("#familyName").val();
-      let email = $("#email").val();
-      let passwordConfirmation = $("#password-confirmation").val();
-      if (passwordConfirmation === password) {
-        this.httpServ.createAccount(name, familyName, email, password, () => {
-          window.location.href = "../client/portfolio.html";
-        });
+      let name = $("#name");
+      let familyName = $("#familyName");
+      let passwordConfirmation = $("#password-confirmation");
+      if (
+        name[0].checkValidity() &&
+        familyName[0].checkValidity() &&
+        email[0].checkValidity() &&
+        password[0].checkValidity() &&
+        passwordConfirmation[0].checkValidity()
+      ) {
+        if (password.val().length >= 8) {
+          if (passwordConfirmation.val() === password.val()) {
+            this.httpServ.createAccount(
+              name.val(),
+              familyName.val(),
+              email.val(),
+              password.val(),
+              () => {
+                window.location.href = "../client/portfolio.html";
+              }
+            );
+          } else {
+            this.displayError("Les mots de passe ne correspondent pas");
+          }
+        } else {
+          this.displayError("Le mot de passe doit faire au moins 8 caractères");
+        }
       } else {
-        this.displayError("Les mots de passe ne correspondent pas");
+        this.displayError("L'email ou le mot de passe ne sont pas valides");
       }
     }
   }

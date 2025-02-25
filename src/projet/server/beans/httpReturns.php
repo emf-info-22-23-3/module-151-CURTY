@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class HttpError
  * 
@@ -6,8 +7,9 @@
  * correspondant à des codes d'état HTTP courants. Chaque méthode retourne une instance de la classe `ErrorAnswer`
  * avec un message d'erreur approprié et le code HTTP correspondant.
  */
-class HttpReturns {
-    
+class HttpReturns
+{
+
     /**
      * Retourne un objet `ErrorAnswer` pour une erreur 400 (Bad Request).
      *
@@ -15,7 +17,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 400.
      */
-    public static function BAD_REQUEST() {
+    public static function BAD_REQUEST()
+    {
         return new ErrorAnswer('The request has missing or invalid parameters.', 400);
     }
 
@@ -26,7 +29,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 401.
      */
-    public static function UNAUTHORIZED() {
+    public static function UNAUTHORIZED()
+    {
         return new ErrorAnswer('The requested action requires you to be authenticated.', 401);
     }
 
@@ -37,7 +41,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 403.
      */
-    public static function FORBIDDEN() {
+    public static function FORBIDDEN()
+    {
         return new ErrorAnswer('The requested action is not allowed.', 403);
     }
 
@@ -48,7 +53,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 404.
      */
-    public static function NOT_FOUND() {
+    public static function NOT_FOUND()
+    {
         return new ErrorAnswer('The requested resource does not exist.', 404);
     }
 
@@ -59,7 +65,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 405.
      */
-    public static function METHOD_NOT_ALLOWED() {
+    public static function METHOD_NOT_ALLOWED()
+    {
         return new ErrorAnswer('The request method is not allowed.', 405);
     }
 
@@ -70,7 +77,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 409.
      */
-    public static function CONFLICT() {
+    public static function CONFLICT()
+    {
         return new ErrorAnswer('The requested action could not be completed because of a conflict.', 409);
     }
 
@@ -81,7 +89,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 422.
      */
-    public static function UNPROCESSABLE_ENTITY() {
+    public static function UNPROCESSABLE_ENTITY()
+    {
         return new ErrorAnswer('The provided parameters are not valid.', 422);
     }
 
@@ -92,7 +101,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 500.
      */
-    public static function INTERNAL_SERVER_ERROR() {
+    public static function INTERNAL_SERVER_ERROR()
+    {
         return new ErrorAnswer('An unexpected server error occurred. Please try again in a moment.', 500);
     }
 
@@ -103,7 +113,8 @@ class HttpReturns {
      *
      * @return ErrorAnswer L'objet `ErrorAnswer` pour une erreur 503.
      */
-    public static function SERVICE_UNAVAILABLE() {
+    public static function SERVICE_UNAVAILABLE()
+    {
         return new ErrorAnswer('The requested service is temporarily down.', 503);
     }
 
@@ -112,8 +123,8 @@ class HttpReturns {
      *
      * @return int Le code de statut HTTP 200 (OK).
      */
-    public static function HttpSuccess() {
+    public static function HttpSuccess()
+    {
         return 200;
     }
 }
-?>

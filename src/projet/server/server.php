@@ -106,8 +106,6 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
                 }
                 break;
             case 'POST':
-                $json = file_get_contents('php://input');
-                $receivedParams = json_decode($json, TRUE);
                 if ($userCtrl->areParamsSet(array('action'), $receivedParams)) {
                     if ($receivedParams['action'] == "disconnect") {
                         unset($_SESSION['user']);

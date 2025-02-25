@@ -53,8 +53,12 @@ class UserCtrl
     public function registerUser($name, $familyName, $email, $password)
     {
         $toReturn = NULL;
-        if($this->isValidString($name) and $this->isValidString($familyName) and $this->isValidEmail($email) and $this->isValidPassword($password)) {
-            $toReturn = $this->workerAuthentication->register($name, $familyName, $email, $password);
+        if($this->isValidString($name) and $this->isValidString($familyName) and $this->isValidEmail($email)) {
+            if($this->isValidPassword($password)){
+                $toReturn = $this->workerAuthentication->register($name, $familyName, $email, $password);
+            }else{
+                $toReturn = New ErrorAnswer("The password must be at least 8 characthers long", 400);
+            }
         }else{
             $toReturn = HttpReturns::BAD_REQUEST();
         }
@@ -88,7 +92,7 @@ class UserCtrl
     private function isValidPassword($password)
     {
         $isValid = false;
-        if (!empty(trim($password)) and is_string($password) and strlen($password) > 8) {
+        if (!empty(trim($password)) and is_string($password) and strlen($password) >= 8) {
             $isValid = true;
         }
         return $isValid;

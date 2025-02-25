@@ -2,10 +2,13 @@
 Repository du projet personnel du module 151
 
 ## Titre du projet
-
+BaoBull
 ### Description du projet
-Votre descriptif du cahier des charges ici
+BaoBull est une application web qui permet à des utilisateurs de gérer leur portefeuille d'actions et d'avoir des statistiques dessus.
 
+### Informations de connexion
+    email: stefano.calabresi@gmail.com
+    mot de passe: StefCal22!
 ### Arborescence
 - L'analyse et les différents tests technos sont effectués dans /exercices
 - La partie cliente qui regroupe tous les fichiers nécessaires au fonctionnement du client développé en HTML/CSS/JS se trouve dans /projet/client </br>
